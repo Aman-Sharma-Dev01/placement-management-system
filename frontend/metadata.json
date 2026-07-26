@@ -1,0 +1,6 @@
+{
+  "name": "Placement Management System",
+  "description": "Enterprise Campus Placement & Talent Acquisition Platform for Universities",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
