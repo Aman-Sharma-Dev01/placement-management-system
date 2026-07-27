@@ -51,7 +51,7 @@ export const AnalyticsReports: React.FC = () => {
             Official University Placement Performance Reports (Batch 2026)
           </p>
         </div>
-        <button className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors whitespace-nowrap">
+        <button className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-medium transition-colors whitespace-nowrap">
           <Download size={16} /> Export Executive Report
         </button>
       </div>
@@ -59,7 +59,7 @@ export const AnalyticsReports: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
           <div className="p-4 border-b border-gray-100 flex items-center gap-2 text-gray-900">
-            <BarChartIcon size={18} className="text-blue-600" />
+            <BarChartIcon size={18} className="text-emerald-600" />
             <h3 className="font-semibold text-[14px]">Department Placement Rate (%)</h3>
           </div>
           <div className="p-4 h-72 flex-1">
@@ -80,7 +80,7 @@ export const AnalyticsReports: React.FC = () => {
 
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
           <div className="p-4 border-b border-gray-100 flex items-center gap-2 text-gray-900">
-            <Briefcase size={18} className="text-indigo-600" />
+            <Briefcase size={18} className="text-emerald-600" />
             <h3 className="font-semibold text-[14px]">Salary Bracket Distribution (CTC in LPA)</h3>
           </div>
           <div className="p-4 h-72 flex-1">

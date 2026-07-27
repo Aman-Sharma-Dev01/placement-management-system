@@ -49,8 +49,33 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [role, setRole] = useState<UserRole>('student');
-  const [activeStudentId, setActiveStudentId] = useState<string>('');
+  const [role, setRole] = useState<UserRole>(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        return (user.role as UserRole) || 'student';
+      } catch {
+        return 'student';
+      }
+    }
+    return 'student';
+  });
+
+  const [activeStudentId, setActiveStudentId] = useState<string>(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.studentProfile && user.studentProfile._id) {
+          return user.studentProfile._id;
+        }
+      } catch {
+        return '';
+      }
+    }
+    return '';
+  });
   
   const [students, setStudents] = useState<Student[]>([]);
   const [drives, setDrives] = useState<PlacementDrive[]>([]);
@@ -64,49 +89,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const fetchInitialData = async () => {
     try {
+      // Fetch common data — each wrapped so one failure doesn't block others
       const [drivesRes, companiesRes, appsRes, notifsRes] = await Promise.all([
-        drivesApi.getAll(),
-        companiesApi.getAll(),
-        applicationsApi.getAll(),
-        notificationsApi.getAll()
+        drivesApi.getAll().catch(() => []),
+        companiesApi.getAll().catch(() => []),
+        applicationsApi.getAll().catch(() => []),
+        notificationsApi.getAll().catch(() => [])
       ]);
       setDrives(drivesRes);
       setCompanies(companiesRes);
       setApplications(appsRes);
       setNotifications(notifsRes);
 
-      // If user is admin/coordinator, fetch all students
+      // If user is admin/coordinator/cell, fetch all students
       if (role !== 'student') {
-        const studentsRes = await studentsApi.getAll({ limit: '100' });
-        setStudents(studentsRes.students);
+        try {
+          const studentsRes = await studentsApi.getAll({ limit: '100' });
+          setStudents(studentsRes.students || []);
+        } catch {
+          console.warn('Could not fetch students list');
+          setStudents([]);
+        }
       } else {
         // Fetch own profile
-        const myProfile = await studentsApi.getMyProfile();
-        setStudents([myProfile]);
-        setActiveStudentId(myProfile._id || myProfile.id);
+        try {
+          const myProfile = await studentsApi.getMyProfile();
+          setStudents([myProfile]);
+          setActiveStudentId(myProfile._id || myProfile.id);
+        } catch {
+          console.warn('Student profile not found — may be a new account');
+          setStudents([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching initial data:', error);
     }
   };
 
-  // Load user data on mount
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user.role) {
-          setRole(user.role as UserRole);
-        }
-        if (user.studentProfile && user.studentProfile._id) {
-          setActiveStudentId(user.studentProfile._id);
-        }
-      } catch (e) {
-        console.error('Error parsing user data', e);
-      }
-    }
-  }, []);
+  // Load user data on mount is now handled in state initialization to avoid race conditions.
 
   useEffect(() => {
     if (role) {

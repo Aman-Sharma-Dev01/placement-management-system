@@ -214,13 +214,13 @@ export const DriveCreationWizard: React.FC = () => {
           return (
             <div key={idx} className="relative z-10 flex flex-col items-center group">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors ${
-                isActive ? 'bg-blue-600 border-blue-600 text-white' :
-                isCompleted ? 'bg-blue-50 border-blue-600 text-blue-600' : 'bg-white border-gray-300 text-gray-400'
+                isActive ? 'bg-emerald-600 border-emerald-600 text-white' :
+                isCompleted ? 'bg-emerald-50 border-emerald-600 text-emerald-600' : 'bg-white border-gray-300 text-gray-400'
               }`}>
                 {isCompleted ? <CheckCircle2 size={16} /> : step.icon}
               </div>
               <span className={`absolute top-10 text-[11px] font-medium whitespace-nowrap ${
-                isActive ? 'text-blue-700' : isCompleted ? 'text-gray-900' : 'text-gray-400'
+                isActive ? 'text-emerald-700' : isCompleted ? 'text-gray-900' : 'text-gray-400'
               }`}>
                 {step.title}
               </span>
@@ -250,7 +250,7 @@ export const DriveCreationWizard: React.FC = () => {
                   value={formValues.companyName}
                   onChange={handleInputChange}
                   placeholder="e.g. Recruit CRM"
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
 
@@ -260,7 +260,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="sector"
                   value={formValues.sector}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 >
                   <option value="SaaS / HRTech">SaaS / HRTech</option>
                   <option value="IT Services / Software">IT Services</option>
@@ -278,7 +278,7 @@ export const DriveCreationWizard: React.FC = () => {
                   value={formValues.companyWebsite}
                   onChange={handleInputChange}
                   placeholder="https://..."
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
 
@@ -290,7 +290,7 @@ export const DriveCreationWizard: React.FC = () => {
                   value={formValues.companyLogo}
                   onChange={handleInputChange}
                   placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
             </div>
@@ -313,7 +313,7 @@ export const DriveCreationWizard: React.FC = () => {
                   value={formValues.jobTitle}
                   onChange={handleInputChange}
                   placeholder="e.g. Trainee Software Engineer"
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
 
@@ -323,7 +323,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="positionType"
                   value={formValues.positionType}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 >
                   <option value="Full Time">Full Time</option>
                   <option value="Internship">Internship</option>
@@ -341,7 +341,7 @@ export const DriveCreationWizard: React.FC = () => {
                     step="0.1"
                     value={formValues.ctcLpa}
                     onChange={handleInputChange}
-                    className="w-full bg-white border border-gray-300 rounded-md pl-7 pr-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md pl-7 pr-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-semibold">LPA</span>
                 </div>
@@ -355,7 +355,7 @@ export const DriveCreationWizard: React.FC = () => {
                   value={formValues.location}
                   onChange={handleInputChange}
                   placeholder="e.g. Remote / Gurgaon"
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
 
@@ -370,7 +370,7 @@ export const DriveCreationWizard: React.FC = () => {
                         value={mode}
                         checked={formValues.workMode === mode}
                         onChange={handleInputChange}
-                        className="w-3.5 h-3.5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        className="w-3.5 h-3.5 text-emerald-600 border-gray-300 focus:ring-emerald-500"
                       />
                       <span className="text-[12.5px]">{mode}</span>
                     </label>
@@ -385,7 +385,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="deadlineDate"
                   value={formValues.deadlineDate}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
             </div>
@@ -398,7 +398,7 @@ export const DriveCreationWizard: React.FC = () => {
                 value={formValues.compensationDetails}
                 onChange={handleInputChange}
                 placeholder="e.g. Fixed: 10 LPA | Variable: 2 LPA"
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               />
             </div>
 
@@ -410,7 +410,7 @@ export const DriveCreationWizard: React.FC = () => {
                 value={formValues.description}
                 onChange={handleInputChange}
                 placeholder="Describe the role, day-to-day responsibilities, technology stack..."
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               ></textarea>
             </div>
 
@@ -422,7 +422,7 @@ export const DriveCreationWizard: React.FC = () => {
                 value={formValues.requirements}
                 onChange={handleInputChange}
                 placeholder="Data Structures & Algorithms&#10;React / Node.js proficiency&#10;SQL databases"
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               ></textarea>
             </div>
 
@@ -434,7 +434,7 @@ export const DriveCreationWizard: React.FC = () => {
                 value={formValues.externalApplyUrl}
                 onChange={handleInputChange}
                 placeholder="If candidates must also register on company careers portal"
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               />
             </div>
           </div>
@@ -464,7 +464,7 @@ export const DriveCreationWizard: React.FC = () => {
                       type="checkbox"
                       checked={allowedBranches.includes(branch)}
                       onChange={() => toggleBranch(branch)}
-                      className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                     />
                     <span className="text-[12px] text-gray-800">{branch}</span>
                   </label>
@@ -481,7 +481,7 @@ export const DriveCreationWizard: React.FC = () => {
                   step="0.1"
                   value={formValues.minCgpa}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
               <div>
@@ -491,7 +491,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="minTenthPercentage"
                   value={formValues.minTenthPercentage}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
               <div>
@@ -501,7 +501,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="minTwelfthPercentage"
                   value={formValues.minTwelfthPercentage}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
               <div>
@@ -511,7 +511,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="maxActiveBacklogs"
                   value={formValues.maxActiveBacklogs}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
               <div>
@@ -521,7 +521,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="maxHistoryBacklogs"
                   value={formValues.maxHistoryBacklogs}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
               <div>
@@ -531,7 +531,7 @@ export const DriveCreationWizard: React.FC = () => {
                   name="maxGapYears"
                   value={formValues.maxGapYears}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
             </div>
@@ -552,7 +552,7 @@ export const DriveCreationWizard: React.FC = () => {
                   className="p-3.5 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[11px] shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[11px] shrink-0">
                       {idx + 1}
                     </span>
                     <div>
@@ -576,12 +576,12 @@ export const DriveCreationWizard: React.FC = () => {
                 placeholder="Round Name (e.g. Group Discussion)"
                 value={newStageName}
                 onChange={(e) => setNewStageName(e.target.value)}
-                className="flex-1 min-w-[150px] bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[12.5px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="flex-1 min-w-[150px] bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[12.5px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               />
               <select
                 value={newStageType}
                 onChange={(e) => setNewStageType(e.target.value as any)}
-                className="w-44 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-[12.5px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="w-44 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-[12.5px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               >
                 <option value="pre_placement_talk">Pre-Placement Talk</option>
                 <option value="online_test">Online Test</option>
@@ -591,7 +591,7 @@ export const DriveCreationWizard: React.FC = () => {
               </select>
               <button
                 onClick={addStage}
-                className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-[12.5px] font-medium transition-colors"
+                className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-[12.5px] font-medium transition-colors"
               >
                 <Plus size={14} /> Add Stage
               </button>
@@ -621,7 +621,7 @@ export const DriveCreationWizard: React.FC = () => {
                       type="checkbox"
                       checked={requiredDocuments.includes(doc)}
                       onChange={() => toggleDocument(doc)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                     />
                     <span className="text-[12.5px] text-gray-800">{doc}</span>
                   </label>
@@ -634,9 +634,9 @@ export const DriveCreationWizard: React.FC = () => {
         {/* Step 5: Preview & Publish */}
         {currentStep === 5 && (
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3.5 flex items-start gap-2.5">
-              <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
-              <span className="text-[12.5px] text-blue-800 leading-relaxed">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3.5 flex items-start gap-2.5">
+              <Info size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-[12.5px] text-emerald-800 leading-relaxed">
                 Review all placement drive details before publishing to students. Once published, students who meet the eligibility criteria will be able to apply.
               </span>
             </div>
@@ -649,7 +649,7 @@ export const DriveCreationWizard: React.FC = () => {
                   </h4>
                   <div className="text-[13px] text-gray-600 font-medium mt-1">{formValues.companyName}</div>
                 </div>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded-md text-[13px] font-bold">
+                <span className="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-md text-[13px] font-bold">
                   ₹ {formValues.ctcLpa} LPA
                 </span>
               </div>
@@ -688,7 +688,7 @@ export const DriveCreationWizard: React.FC = () => {
 
           <button
             onClick={handleNext}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[13px] font-medium transition-colors"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[13px] font-medium transition-colors"
           >
             {currentStep === 5 ? 'Publish Placement Drive' : 'Next Step'}
           </button>

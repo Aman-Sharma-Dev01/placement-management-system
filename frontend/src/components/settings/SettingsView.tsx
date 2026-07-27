@@ -64,7 +64,7 @@ export const SettingsView: React.FC = () => {
                   max="5"
                   value={formValues.maxOffers}
                   onChange={(e) => setFormValues({...formValues, maxOffers: parseInt(e.target.value)})}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
 
@@ -77,7 +77,7 @@ export const SettingsView: React.FC = () => {
                   step="0.1"
                   value={formValues.minCgpaDefault}
                   onChange={(e) => setFormValues({...formValues, minCgpaDefault: parseFloat(e.target.value)})}
-                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                 />
               </div>
             </div>
@@ -100,7 +100,7 @@ export const SettingsView: React.FC = () => {
                     checked={formValues.autoLockVerifiedProfiles}
                     onChange={() => handleToggle('autoLockVerifiedProfiles')}
                   />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${formValues.autoLockVerifiedProfiles ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${formValues.autoLockVerifiedProfiles ? 'bg-emerald-600' : 'bg-gray-300'}`}></div>
                   <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formValues.autoLockVerifiedProfiles ? 'transform translate-x-4' : ''}`}></div>
                 </div>
               </label>
@@ -114,7 +114,7 @@ export const SettingsView: React.FC = () => {
                     checked={formValues.emailNotifications}
                     onChange={() => handleToggle('emailNotifications')}
                   />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${formValues.emailNotifications ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${formValues.emailNotifications ? 'bg-emerald-600' : 'bg-gray-300'}`}></div>
                   <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formValues.emailNotifications ? 'transform translate-x-4' : ''}`}></div>
                 </div>
               </label>
@@ -124,7 +124,7 @@ export const SettingsView: React.FC = () => {
           <div className="pt-4 border-t border-gray-100">
             <button
               type="submit"
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-[13px] transition-colors"
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-medium text-[13px] transition-colors"
             >
               <Save size={16} /> Save Policy Changes
             </button>

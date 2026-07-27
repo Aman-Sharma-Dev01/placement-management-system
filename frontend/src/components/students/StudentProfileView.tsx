@@ -322,13 +322,23 @@ export const StudentProfileView: React.FC = () => {
     { id: 'accomplishments', label: 'Accomplishments', icon: <Trophy size={16} /> },
     { id: 'resumes', label: 'Resumes & Documents', icon: <FileText size={16} /> },
   ];
+  const checklistItems = [
+    { label: 'Basic Contact Info', done: !!activeStudent.phone && !!activeStudent.email },
+    { label: '10th Academic Records', done: !!activeStudent.education?.tenth?.percentage && !!activeStudent.education?.tenth?.marksheetUrl },
+    { label: '12th Academic Records', done: !!activeStudent.education?.twelfth?.percentage && !!activeStudent.education?.twelfth?.marksheetUrl },
+    { label: 'Graduation Details', done: !!activeStudent.education?.graduation?.cgpa && !!activeStudent.education?.graduation?.branch },
+    { label: 'Primary Resume', done: activeStudent.resumes?.some((r) => r.isPrimary) },
+    { label: 'Skills Added', done: activeStudent.skills && activeStudent.skills.length > 0 }
+  ];
+  const completedChecklistCount = checklistItems.filter(i => i.done).length;
+  const computedCompletionPercentage = Math.round((completedChecklistCount / checklistItems.length) * 100);
 
   return (
     <div className="flex flex-col space-y-4 text-[13px] text-gray-900">
       {/* Verification Status Header Bar */}
       <div className="bg-white border border-gray-200 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold border-2 border-white shadow-sm shrink-0 overflow-hidden">
+          <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xl font-bold border-2 border-white shadow-sm shrink-0 overflow-hidden">
             {activeStudent.avatarUrl ? (
               <img src={activeStudent.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -428,24 +438,40 @@ export const StudentProfileView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Sub-Navigation Menu */}
         <div className="lg:col-span-3 bg-white border border-gray-200 rounded-lg p-3">
-          <div className="p-4 bg-blue-50/50 rounded-lg mb-3 border border-blue-100">
+          <div className="p-4 bg-emerald-50/50 rounded-lg mb-3 border border-emerald-100">
             <div className="flex items-center justify-between text-[12px] mb-2">
               <span className="font-semibold text-gray-700">Profile Completion</span>
-              <span className="font-bold text-blue-700">{activeStudent.profileCompletionPercentage}%</span>
+              <span className="font-bold text-emerald-700">{computedCompletionPercentage}%</span>
             </div>
-            <div className="w-full bg-blue-200/50 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${activeStudent.profileCompletionPercentage}%` }}></div>
+            <div className="w-full bg-emerald-200/50 rounded-full h-1.5 overflow-hidden mb-4">
+              <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${computedCompletionPercentage}%` }}></div>
+            </div>
+            
+            <div className="space-y-2 border-t border-emerald-100 pt-3">
+              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Completion Checklist</span>
+              <div className="space-y-1.5">
+                {checklistItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-[11.5px]">
+                    {item.done ? (
+                      <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                    ) : (
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 shrink-0 flex items-center justify-center"></div>
+                    )}
+                    <span className={item.done ? "text-gray-700" : "text-gray-500"}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col space-y-0.5">
+          <div className="flex flex-col space-y-0.5 mt-2">
             {menuItems.map((nav) => (
               <button
                 key={nav.id}
                 onClick={() => setActiveSection(nav.id)}
                 className={`w-full text-left px-3 py-2 rounded-md text-[13px] font-medium flex items-center gap-2.5 transition-colors ${
                   activeSection === nav.id
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-emerald-600 text-white'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
@@ -524,7 +550,7 @@ export const StudentProfileView: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <span className="text-[11px] text-gray-500 block">Overall CGPA</span>
-                    <span className="text-[20px] font-bold text-blue-700">
+                    <span className="text-[20px] font-bold text-emerald-700">
                       {activeStudent.education.graduation.cgpa} <span className="text-[14px] text-gray-400 font-medium">/ 10.0</span>
                     </span>
                   </div>
@@ -559,7 +585,7 @@ export const StudentProfileView: React.FC = () => {
                 <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
                   <div className="flex justify-between items-start">
                     <span className="font-semibold text-[13px] text-gray-900">12th Standard (Higher Secondary)</span>
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 font-medium text-[11px] rounded border border-blue-100">
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-medium text-[11px] rounded border border-emerald-100">
                       {activeStudent.education.twelfth.percentage}%
                     </span>
                   </div>
@@ -569,7 +595,7 @@ export const StudentProfileView: React.FC = () => {
                   </div>
                   <div className="pt-2 flex items-center justify-between">
                     {activeStudent.education.twelfth.marksheetUrl ? (
-                      <a href={activeStudent.education.twelfth.marksheetUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-blue-600 font-medium text-[12px] hover:underline mt-1">
+                      <a href={activeStudent.education.twelfth.marksheetUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline mt-1">
                         <Download size={14} /> Class 12 Marksheet
                       </a>
                     ) : (
@@ -592,7 +618,7 @@ export const StudentProfileView: React.FC = () => {
                 <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
                   <div className="flex justify-between items-start">
                     <span className="font-semibold text-[13px] text-gray-900">10th Standard (Secondary)</span>
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 font-medium text-[11px] rounded border border-blue-100">
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-medium text-[11px] rounded border border-emerald-100">
                       {activeStudent.education.tenth.percentage}%
                     </span>
                   </div>
@@ -602,7 +628,7 @@ export const StudentProfileView: React.FC = () => {
                   </div>
                   <div className="pt-2 flex items-center justify-between">
                     {activeStudent.education.tenth.marksheetUrl ? (
-                      <a href={activeStudent.education.tenth.marksheetUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-blue-600 font-medium text-[12px] hover:underline mt-1">
+                      <a href={activeStudent.education.tenth.marksheetUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline mt-1">
                         <Download size={14} /> Class 10 Marksheet
                       </a>
                     ) : (
@@ -653,7 +679,7 @@ export const StudentProfileView: React.FC = () => {
                     setProjectForm({ title: '', description: '', techStack: '', link: '' });
                     setAddProjectModalVisible(true);
                   }}
-                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-md text-[11.5px] font-medium transition-colors"
+                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11.5px] font-medium transition-colors"
                 >
                   <Plus size={14} /> Add Project
                 </button>
@@ -666,7 +692,7 @@ export const StudentProfileView: React.FC = () => {
                       <div className="flex-1">
                         <span className="font-semibold text-gray-900 text-[14px] block mb-1">{proj.title}</span>
                         {proj.link && (
-                          <a href={proj.link} target="_blank" rel="noreferrer" className="text-blue-600 font-medium text-[12px] hover:underline">
+                          <a href={proj.link} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[12px] hover:underline">
                             View Code / Live Link
                           </a>
                         )}
@@ -683,7 +709,7 @@ export const StudentProfileView: React.FC = () => {
                             });
                             setAddProjectModalVisible(true);
                           }}
-                          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit"
+                          className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors" title="Edit"
                         >
                           <Edit2 size={14} />
                         </button>
@@ -748,7 +774,7 @@ export const StudentProfileView: React.FC = () => {
                       <div>
                         <div className="font-semibold text-gray-900 text-[13px] flex items-center gap-2 mb-0.5">
                           {res.name}
-                          {res.isPrimary && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-[9.5px] font-medium border border-blue-100">Primary Version</span>}
+                          {res.isPrimary && <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[9.5px] font-medium border border-emerald-100">Primary Version</span>}
                         </div>
                         <span className="text-[11px] text-gray-500">Uploaded on {res.uploadedAt}</span>
                       </div>
@@ -800,7 +826,7 @@ export const StudentProfileView: React.FC = () => {
               </div>
               <div className="flex flex-wrap gap-2">
                 {activeStudent.skills.map((skill, idx) => (
-                  <span key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-md text-[12px] font-medium">
+                  <span key={idx} className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1.5 rounded-md text-[12px] font-medium">
                     {skill}
                   </span>
                 ))}
@@ -821,7 +847,7 @@ export const StudentProfileView: React.FC = () => {
                     setInternshipForm({ company: '', role: '', duration: '', description: '', certificateUrl: '' });
                     setAddInternshipModalVisible(true);
                   }}
-                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-md text-[11.5px] font-medium transition-colors"
+                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11.5px] font-medium transition-colors"
                 >
                   <Plus size={14} /> Add Internship
                 </button>
@@ -848,7 +874,7 @@ export const StudentProfileView: React.FC = () => {
                             });
                             setAddInternshipModalVisible(true);
                           }}
-                          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit"
+                          className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors" title="Edit"
                         >
                           <Edit2 size={14} />
                         </button>
@@ -863,7 +889,7 @@ export const StudentProfileView: React.FC = () => {
                     <p className="text-gray-600 text-[12.5px] m-0 leading-relaxed">{intern.description}</p>
                     {intern.certificateUrl && (
                       <div className="pt-1">
-                        <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-blue-600 font-medium text-[12px] hover:underline">
+                        <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline">
                           <Download size={14} /> Download Certificate
                         </a>
                       </div>
@@ -891,7 +917,7 @@ export const StudentProfileView: React.FC = () => {
                     setCertificateForm({ title: '', issuer: '', issueDate: '', credentialUrl: '' });
                     setAddCertificateModalVisible(true);
                   }}
-                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-md text-[11.5px] font-medium transition-colors"
+                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11.5px] font-medium transition-colors"
                 >
                   <Plus size={14} /> Add Certificate
                 </button>
@@ -913,7 +939,7 @@ export const StudentProfileView: React.FC = () => {
                       </div>
                       {cert.credentialUrl && (
                         <div className="pt-1">
-                          <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-blue-600 font-medium text-[12px] hover:underline">
+                          <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline">
                             View Credential
                           </a>
                         </div>
@@ -931,7 +957,7 @@ export const StudentProfileView: React.FC = () => {
                           });
                           setAddCertificateModalVisible(true);
                         }}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit"
+                        className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors" title="Edit"
                       >
                         <Edit2 size={14} />
                       </button>
@@ -975,7 +1001,7 @@ export const StudentProfileView: React.FC = () => {
                     type="text"
                     value={basicForm.name}
                     onChange={(e) => setBasicForm({...basicForm, name: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                 </div>
                 <div>
@@ -985,7 +1011,7 @@ export const StudentProfileView: React.FC = () => {
                     type="text"
                     value={basicForm.phone}
                     onChange={(e) => setBasicForm({...basicForm, phone: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                 </div>
                 <div>
@@ -995,7 +1021,7 @@ export const StudentProfileView: React.FC = () => {
                     type="email"
                     value={basicForm.email}
                     onChange={(e) => setBasicForm({...basicForm, email: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                 </div>
               </div>
@@ -1009,7 +1035,7 @@ export const StudentProfileView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 rounded-md text-[13px] font-medium text-white hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-emerald-600 rounded-md text-[13px] font-medium text-white hover:bg-emerald-700 transition-colors"
                 >
                   Save Changes
                 </button>
@@ -1041,7 +1067,7 @@ export const StudentProfileView: React.FC = () => {
                     placeholder="e.g. Campus Placement ERP"
                     value={projectForm.title}
                     onChange={(e) => setProjectForm({...projectForm, title: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1052,7 +1078,7 @@ export const StudentProfileView: React.FC = () => {
                     placeholder="Brief description of features built"
                     value={projectForm.description}
                     onChange={(e) => setProjectForm({...projectForm, description: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   ></textarea>
                 </div>
                 <div>
@@ -1063,7 +1089,7 @@ export const StudentProfileView: React.FC = () => {
                     placeholder="React, TypeScript, Tailwind"
                     value={projectForm.techStack}
                     onChange={(e) => setProjectForm({...projectForm, techStack: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1073,7 +1099,7 @@ export const StudentProfileView: React.FC = () => {
                     placeholder="https://github.com/..."
                     value={projectForm.link}
                     onChange={(e) => setProjectForm({...projectForm, link: e.target.value})}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   />
                 </div>
               </div>
@@ -1087,7 +1113,7 @@ export const StudentProfileView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 rounded-md text-[13px] font-medium text-white hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-emerald-600 rounded-md text-[13px] font-medium text-white hover:bg-emerald-700 transition-colors"
                 >
                   {editProjectIndex !== -1 ? 'Save Changes' : 'Add Project'}
                 </button>
@@ -1180,7 +1206,7 @@ export const StudentProfileView: React.FC = () => {
               </div>
               <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-lg shrink-0">
                 <button type="button" onClick={() => setEditEducationModalVisible(false)} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-[13px] font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md text-[13px] font-medium text-white hover:bg-blue-700">Save Changes</button>
+                <button type="submit" className="px-4 py-2 bg-emerald-600 rounded-md text-[13px] font-medium text-white hover:bg-emerald-700">Save Changes</button>
               </div>
             </form>
           </div>
@@ -1209,13 +1235,13 @@ export const StudentProfileView: React.FC = () => {
                     placeholder="e.g. React, Python, Node.js"
                     value={skillsForm}
                     onChange={(e) => setSkillsForm(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
                   ></textarea>
                 </div>
               </div>
               <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-lg">
                 <button type="button" onClick={() => setEditSkillsModalVisible(false)} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-[13px] font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md text-[13px] font-medium text-white hover:bg-blue-700">Save Skills</button>
+                <button type="submit" className="px-4 py-2 bg-emerald-600 rounded-md text-[13px] font-medium text-white hover:bg-emerald-700">Save Skills</button>
               </div>
             </form>
           </div>
@@ -1260,7 +1286,7 @@ export const StudentProfileView: React.FC = () => {
               </div>
               <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-lg">
                 <button type="button" onClick={() => setAddInternshipModalVisible(false)} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-[13px] font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md text-[13px] font-medium text-white hover:bg-blue-700">
+                <button type="submit" className="px-4 py-2 bg-emerald-600 rounded-md text-[13px] font-medium text-white hover:bg-emerald-700">
                   {editInternshipIndex !== -1 ? 'Save Changes' : 'Add Internship'}
                 </button>
               </div>
@@ -1302,7 +1328,7 @@ export const StudentProfileView: React.FC = () => {
               </div>
               <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-lg">
                 <button type="button" onClick={() => setAddCertificateModalVisible(false)} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-[13px] font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md text-[13px] font-medium text-white hover:bg-blue-700">
+                <button type="submit" className="px-4 py-2 bg-emerald-600 rounded-md text-[13px] font-medium text-white hover:bg-emerald-700">
                   {editCertificateIndex !== -1 ? 'Save Changes' : 'Add Certificate'}
                 </button>
               </div>

@@ -57,8 +57,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-900/20 blur-[120px]" />
-        <div className="absolute -bottom-[30%] -right-[10%] w-[70%] h-[70%] rounded-full bg-indigo-900/20 blur-[120px]" />
+        <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-emerald-900/20 blur-[120px]" />
+        <div className="absolute -bottom-[30%] -right-[10%] w-[70%] h-[70%] rounded-full bg-emerald-900/20 blur-[120px]" />
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md z-10">
@@ -67,7 +67,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-center"
         >
-          <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-900/50">
+          <div className="bg-emerald-600 p-3 rounded-2xl shadow-lg shadow-emerald-900/50">
             <GraduationCap className="w-12 h-12 text-white" />
           </div>
         </motion.div>
@@ -102,7 +102,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                isLogin ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                isLogin ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
               Sign In
@@ -110,7 +110,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             <button
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                !isLogin ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                !isLogin ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
               Register
@@ -131,7 +131,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+                      className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors"
                       placeholder="John Doe"
                     />
                   </div>
@@ -146,7 +146,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     <select
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
-                      className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors appearance-none"
+                      className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors appearance-none"
                     >
                       <option value="student">Student</option>
                       <option value="placement_coordinator">Placement Coordinator</option>
@@ -163,7 +163,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                         required
                         value={rollNo}
                         onChange={(e) => setRollNo(e.target.value)}
-                        className="block w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-white focus:ring-2 focus:ring-blue-500 sm:text-sm"
+                        className="block w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-white focus:ring-2 focus:ring-emerald-500 sm:text-sm"
                         placeholder="2022BTCS001"
                       />
                     </div>
@@ -174,7 +174,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                         required
                         value={batchYear}
                         onChange={(e) => setBatchYear(parseInt(e.target.value))}
-                        className="block w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-white focus:ring-2 focus:ring-blue-500 sm:text-sm"
+                        className="block w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-white focus:ring-2 focus:ring-emerald-500 sm:text-sm"
                       />
                     </div>
                   </div>
@@ -193,7 +193,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+                  className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors"
                   placeholder="you@university.edu.in"
                 />
               </div>
@@ -210,7 +210,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+                  className="block w-full pl-10 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -223,7 +223,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-950"
+                    className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-slate-950"
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-400">
                     Remember me
@@ -231,7 +231,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                 </div>
 
                 <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-500 hover:text-blue-400 transition-colors">
+                  <a href="#" className="font-medium text-emerald-500 hover:text-emerald-400 transition-colors">
                     Forgot password?
                   </a>
                 </div>
@@ -241,7 +241,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-slate-900 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-slate-900 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

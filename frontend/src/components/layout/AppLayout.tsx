@@ -41,9 +41,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const roleLabels: Record<UserRole, { label: string; color: string; bg: string }> = {
-    student: { label: 'Student Portal', color: 'text-blue-700', bg: 'bg-blue-50' },
+    student: { label: 'Student Portal', color: 'text-emerald-700', bg: 'bg-emerald-50' },
     placement_coordinator: { label: 'Placement Coordinator Portal', color: 'text-green-700', bg: 'bg-green-50' },
-    placement_cell: { label: 'Placement Cell Portal', color: 'text-indigo-700', bg: 'bg-indigo-50' },
+    placement_cell: { label: 'Placement Cell Portal', color: 'text-emerald-700', bg: 'bg-emerald-50' },
     super_admin: { label: 'Super Admin Portal', color: 'text-amber-700', bg: 'bg-amber-50' },
   };
 
@@ -106,12 +106,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             className="flex items-center gap-2.5 cursor-pointer"
             onClick={() => setActiveTab('dashboard')}
           >
-            <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-8 h-8 rounded-md bg-emerald-600 flex items-center justify-center text-white font-bold text-lg">
               S
             </div>
             <div className="flex flex-col">
               <span className="font-semibold text-gray-900 text-[15px] leading-tight">
-                SUPERSET<span className="text-blue-600 font-medium">ERP</span>
+                SUPERSET<span className="text-emerald-600 font-medium">ERP</span>
               </span>
               <span className="text-[10px] text-gray-500 font-medium tracking-wide uppercase leading-tight">
                 University Placement Portal
@@ -123,7 +123,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
           {/* University Badge */}
           <div className="hidden md:flex items-center bg-gray-50 px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-600 border border-gray-200 gap-1.5">
-            <Building size={14} className="text-blue-600" />
+            <Building size={14} className="text-emerald-600" />
             Manav Rachna University, Faridabad
           </div>
         </div>
@@ -134,7 +134,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {role === 'placement_cell' || role === 'super_admin' ? (
             <button
               onClick={() => setActiveTab('drive_create')}
-              className="hidden sm:flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors font-medium text-[13px]"
+              className="hidden sm:flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 transition-colors font-medium text-[13px]"
             >
               <Plus size={14} />
               Create Placement Drive
@@ -166,7 +166,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               onClick={() => setUserDropdownVisible(!userDropdownVisible)}
               className="flex items-center gap-2 p-1 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-xs border border-indigo-200 shrink-0">
+              <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-semibold text-xs border border-emerald-200 shrink-0">
                 {role === 'student' ? (activeStudent?.name?.charAt(0) || 'S') : 'S'}
               </div>
               <div className="hidden lg:flex flex-col text-left">
@@ -215,9 +215,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <div className="flex-1 overflow-y-auto py-3">
             {/* Student Info Box */}
             {!collapsed && role === 'student' && (
-              <div className="mx-3 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="mx-3 mb-4 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-[13px] border border-indigo-200 shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-semibold text-[13px] border border-emerald-200 shrink-0">
                     {activeStudent?.name?.charAt(0) || 'S'}
                   </div>
                   <div className="overflow-hidden">
@@ -229,7 +229,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     </span>
                   </div>
                 </div>
-                <div className="mt-2.5 pt-2 border-t border-blue-200 flex items-center justify-between text-[11px]">
+                <div className="mt-2.5 pt-2 border-t border-emerald-200 flex items-center justify-between text-[11px]">
                   <span className="text-gray-600">CGPA: <strong className="text-gray-900">{activeStudent?.education?.graduation?.cgpa || 'N/A'}</strong></span>
                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                     activeStudent?.verificationStatus === 'verified' ? 'bg-green-50 text-green-700' :
@@ -251,7 +251,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     onClick={() => setActiveTab(item.key)}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
                       isActive
-                        ? 'bg-blue-50 text-blue-600 font-medium'
+                        ? 'bg-emerald-50 text-emerald-600 font-medium'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                     title={collapsed ? item.label : undefined}
@@ -259,9 +259,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     {/* Fake left border accent using absolute positioning or just border */}
                     <div className="relative flex items-center gap-3 w-full">
                       {isActive && (
-                        <div className="absolute -left-3 top-0 bottom-0 w-[2px] bg-blue-600 rounded-r-md"></div>
+                        <div className="absolute -left-3 top-0 bottom-0 w-[2px] bg-emerald-600 rounded-r-md"></div>
                       )}
-                      <span className={isActive ? 'text-blue-600' : 'text-gray-400'}>
+                      <span className={isActive ? 'text-emerald-600' : 'text-gray-400'}>
                         {item.icon}
                       </span>
                       {!collapsed && <span className="truncate">{item.label}</span>}
@@ -324,7 +324,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <h2 className="font-semibold text-[15px] text-gray-900">Notifications & Alerts</h2>
               <div className="flex items-center gap-2">
-                {unreadCount > 0 && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded">
+                {unreadCount > 0 && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-medium rounded">
                   {unreadCount} New
                 </span>}
                 <button onClick={() => setNotifDrawerVisible(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-50">
@@ -345,11 +345,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     }
                   }}
                   className={`p-3 rounded-lg border cursor-pointer transition-colors flex gap-3 ${
-                    item.read ? 'bg-white border-gray-100' : 'bg-blue-50 border-blue-100'
+                    item.read ? 'bg-white border-gray-100' : 'bg-emerald-50 border-emerald-100'
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
-                    item.read ? 'bg-gray-100 text-gray-500' : 'bg-blue-600 text-white'
+                    item.read ? 'bg-gray-100 text-gray-500' : 'bg-emerald-600 text-white'
                   }`}>
                     {item.type === 'drive' ? <Briefcase size={14} /> :
                      item.type === 'verification' ? <ShieldCheck size={14} /> :

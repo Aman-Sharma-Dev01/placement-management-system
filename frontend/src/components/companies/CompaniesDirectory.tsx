@@ -37,12 +37,12 @@ export const CompaniesDirectory: React.FC = () => {
             placeholder="Search corporate recruiting partner..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-white border border-gray-300 rounded-md text-[12.5px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+            className="w-full pl-8 pr-3 py-1.5 bg-white border border-gray-300 rounded-md text-[12.5px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
           />
         </div>
 
         {(role === 'placement_cell' || role === 'super_admin') && (
-          <button className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-[12.5px] font-medium transition-colors">
+          <button className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-[12.5px] font-medium transition-colors">
             <Plus size={14} /> Register Partner
           </button>
         )}
@@ -80,8 +80,8 @@ export const CompaniesDirectory: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded text-[10.5px] font-bold tracking-wider ${
-                      record.tier.includes('Super Dream') ? 'bg-purple-100 text-purple-700 border border-purple-200' :
-                      record.tier.includes('Dream') ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                      record.tier.includes('Super Dream') ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                      record.tier.includes('Dream') ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
                       'bg-gray-100 text-gray-700 border border-gray-200'
                     }`}>
                       {record.tier}
@@ -96,7 +96,7 @@ export const CompaniesDirectory: React.FC = () => {
                     <span className="font-medium text-gray-800">{record.activeDrivesCount} Active</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-semibold text-blue-700">{record.totalHired} Students</span>
+                    <span className="font-semibold text-emerald-700">{record.totalHired} Students</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="font-semibold text-gray-900">₹ {record.avgCtc} LPA</span>

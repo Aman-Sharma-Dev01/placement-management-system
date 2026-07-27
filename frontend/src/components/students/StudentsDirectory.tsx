@@ -106,14 +106,14 @@ export const StudentsDirectory: React.FC = () => {
               placeholder="Search student, Roll No, ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-white border border-gray-300 rounded-md text-[12px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+              className="w-full pl-8 pr-3 py-1.5 bg-white border border-gray-300 rounded-md text-[12px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
             />
           </div>
 
           <select
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
-            className="bg-white border border-gray-300 rounded-md text-[12px] py-1.5 pl-2 pr-6 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 w-48"
+            className="bg-white border border-gray-300 rounded-md text-[12px] py-1.5 pl-2 pr-6 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 w-48"
           >
             <option value="all">All Branches</option>
             <option value="Computer Science">Computer Science (CSE)</option>
@@ -125,7 +125,7 @@ export const StudentsDirectory: React.FC = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-white border border-gray-300 rounded-md text-[12px] py-1.5 pl-2 pr-6 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 w-36"
+            className="bg-white border border-gray-300 rounded-md text-[12px] py-1.5 pl-2 pr-6 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 w-36"
           >
             <option value="all">All Verifications</option>
             <option value="verified">Verified Only</option>
@@ -166,7 +166,7 @@ export const StudentsDirectory: React.FC = () => {
                     type="checkbox"
                     checked={filteredStudents.length > 0 && selectedRowKeys.length === filteredStudents.length}
                     onChange={toggleAllSelection}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                   />
                 </th>
                 <th className="px-4 py-3 font-medium text-gray-500 text-[11.5px] uppercase tracking-wide">Student Details</th>
@@ -180,18 +180,18 @@ export const StudentsDirectory: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredStudents.map((student: any) => (
-                <tr key={student.id || student._id} className={`hover:bg-gray-50 transition-colors ${selectedRowKeys.includes(student.id || student._id) ? 'bg-blue-50/50' : ''}`}>
+                <tr key={student.id || student._id} className={`hover:bg-gray-50 transition-colors ${selectedRowKeys.includes(student.id || student._id) ? 'bg-emerald-50/50' : ''}`}>
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
                       checked={selectedRowKeys.includes(student.id || student._id)}
                       onChange={() => toggleRowSelection(student.id || student._id)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                     />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                      <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
                         {student.avatarUrl ? <img src={student.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : student.name.charAt(0)}
                       </div>
                       <div>
@@ -205,7 +205,7 @@ export const StudentsDirectory: React.FC = () => {
                   <td className="px-4 py-3">
                     <span className={`font-semibold ${
                       student.education.graduation.cgpa >= 8.5 ? 'text-green-700' :
-                      student.education.graduation.cgpa >= 7.0 ? 'text-blue-700' : 'text-gray-900'
+                      student.education.graduation.cgpa >= 7.0 ? 'text-emerald-700' : 'text-gray-900'
                     }`}>
                       {student.education.graduation.cgpa}
                     </span>
@@ -234,16 +234,33 @@ export const StudentsDirectory: React.FC = () => {
                         <Eye size={12} /> Inspect
                       </button>
                       {(role === 'placement_coordinator' || role === 'super_admin') && (
-                        <button
-                          onClick={() => {
-                            setInspectStudent(student);
-                            setActionStatus('verified');
-                            setRemarksModalVisible(true);
-                          }}
-                          className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors"
-                        >
-                          <CheckCircle2 size={12} /> Verify
-                        </button>
+                        student.verificationStatus === 'verified' ? (
+                          <span className="flex items-center gap-1 bg-green-50 border border-green-200 text-green-700 px-2 py-1 rounded-md text-[11.5px] font-medium">
+                            <CheckCircle2 size={12} /> Verified
+                          </span>
+                        ) : student.verificationStatus === 'rejected' ? (
+                          <button
+                            onClick={() => {
+                              setInspectStudent(student);
+                              setActionStatus('verified');
+                              setRemarksModalVisible(true);
+                            }}
+                            className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors"
+                          >
+                            <CheckCircle2 size={12} /> Re-verify
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setInspectStudent(student);
+                              setActionStatus('verified');
+                              setRemarksModalVisible(true);
+                            }}
+                            className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors"
+                          >
+                            <CheckCircle2 size={12} /> Verify
+                          </button>
+                        )
                       )}
                     </div>
                   </td>
@@ -266,7 +283,7 @@ export const StudentsDirectory: React.FC = () => {
           <div className="relative w-full max-w-md bg-white h-full shadow-xl flex flex-col border-l border-gray-200">
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2 text-gray-900">
-                <ShieldCheck size={18} className="text-blue-600" />
+                <ShieldCheck size={18} className="text-emerald-600" />
                 <h2 className="font-semibold text-[15px]">Student Document Verification</h2>
               </div>
               <button onClick={() => setInspectStudent(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-50">
@@ -290,7 +307,7 @@ export const StudentsDirectory: React.FC = () => {
 
               <div>
                 <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Academic Scores & CGPA:</h4>
-                <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-1.5 text-[12.5px] text-gray-700">
+                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-lg space-y-1.5 text-[12.5px] text-gray-700">
                   <div className="flex justify-between"><span>Graduation CGPA:</span> <strong className="text-gray-900">{inspectStudent.education.graduation.cgpa}</strong></div>
                   <div className="flex justify-between"><span>12th Percentage:</span> <strong className="text-gray-900">{inspectStudent.education.twelfth.percentage}%</strong></div>
                   <div className="flex justify-between"><span>10th Percentage:</span> <strong className="text-gray-900">{inspectStudent.education.tenth.percentage}%</strong></div>
@@ -307,7 +324,7 @@ export const StudentsDirectory: React.FC = () => {
                       <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
                         <FileText size={16} className="text-red-500" /> Class 12 Marksheet
                       </span>
-                      <a href={inspectStudent.education.twelfth.marksheetUrl} target="_blank" rel="noreferrer" className="text-blue-600 font-medium text-[11.5px] hover:underline">View PDF</a>
+                      <a href={inspectStudent.education.twelfth.marksheetUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
                     </div>
                   ) : (
                     <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50 shadow-sm text-gray-400 text-[12.5px]">
@@ -321,7 +338,7 @@ export const StudentsDirectory: React.FC = () => {
                       <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
                         <FileText size={16} className="text-red-500" /> Class 10 Marksheet
                       </span>
-                      <a href={inspectStudent.education.tenth.marksheetUrl} target="_blank" rel="noreferrer" className="text-blue-600 font-medium text-[11.5px] hover:underline">View PDF</a>
+                      <a href={inspectStudent.education.tenth.marksheetUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
                     </div>
                   ) : (
                     <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50 shadow-sm text-gray-400 text-[12.5px]">
@@ -333,10 +350,10 @@ export const StudentsDirectory: React.FC = () => {
                   {inspectStudent.resumes?.map((res, idx) => (
                     <div key={idx} className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-white shadow-sm">
                       <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
-                        <FileText size={16} className="text-blue-500" /> {res.name} {res.isPrimary && '(Primary)'}
+                        <FileText size={16} className="text-emerald-500" /> {res.name} {res.isPrimary && '(Primary)'}
                       </span>
                       {res.fileUrl ? (
-                        <a href={res.fileUrl} target="_blank" rel="noreferrer" className="text-blue-600 font-medium text-[11.5px] hover:underline">View PDF</a>
+                        <a href={res.fileUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
                       ) : (
                         <span className="text-gray-400 text-[11.5px]">Missing File</span>
                       )}
@@ -370,7 +387,7 @@ export const StudentsDirectory: React.FC = () => {
                         <div className="text-gray-500 mb-1">{intern.duration}</div>
                         <p className="text-gray-600 mb-1">{intern.description}</p>
                         {intern.certificateUrl && (
-                          <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline">View Certificate</a>
+                          <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline">View Certificate</a>
                         )}
                       </div>
                     ))}
@@ -388,7 +405,7 @@ export const StudentsDirectory: React.FC = () => {
                         <div className="font-semibold text-gray-900">{proj.title}</div>
                         <p className="text-gray-600 mb-1">{proj.description}</p>
                         {proj.link && (
-                          <a href={proj.link} target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline block mb-1">View Project</a>
+                          <a href={proj.link} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline block mb-1">View Project</a>
                         )}
                         <div className="flex flex-wrap gap-1 mt-1">
                           {proj.techStack?.map((tech, i) => (
@@ -404,18 +421,34 @@ export const StudentsDirectory: React.FC = () => {
 
             {(role === 'placement_coordinator' || role === 'super_admin') && (
               <div className="p-4 border-t border-gray-200 bg-gray-50 flex flex-col gap-2">
-                <button
-                  onClick={() => { setActionStatus('verified'); setRemarksModalVisible(true); }}
-                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md font-medium text-[13px] transition-colors"
-                >
-                  <CheckCircle2 size={16} /> Approve Verification
-                </button>
-                <button
-                  onClick={() => { setActionStatus('rejected'); setRemarksModalVisible(true); }}
-                  className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2 rounded-md font-medium text-[13px] transition-colors"
-                >
-                  <XCircle size={16} /> Send Back for Correction
-                </button>
+                {inspectStudent.verificationStatus === 'verified' ? (
+                  <>
+                    <div className="flex items-center gap-2 justify-center text-green-700 text-[13px] font-medium py-1">
+                      <CheckCircle2 size={16} /> This profile is already verified
+                    </div>
+                    <button
+                      onClick={() => { setActionStatus('pending'); setRemarksModalVisible(true); }}
+                      className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-md font-medium text-[13px] transition-colors"
+                    >
+                      Unlock Profile (Set to Pending)
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setActionStatus('verified'); setRemarksModalVisible(true); }}
+                      className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md font-medium text-[13px] transition-colors"
+                    >
+                      <CheckCircle2 size={16} /> Approve Verification
+                    </button>
+                    <button
+                      onClick={() => { setActionStatus('rejected'); setRemarksModalVisible(true); }}
+                      className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2 rounded-md font-medium text-[13px] transition-colors"
+                    >
+                      <XCircle size={16} /> Send Back for Correction
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -441,7 +474,7 @@ export const StudentsDirectory: React.FC = () => {
                 placeholder="e.g. Verified all marksheets against original controller records."
                 value={remarksInput}
                 onChange={(e) => setRemarksInput(e.target.value)}
-                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               ></textarea>
             </div>
 

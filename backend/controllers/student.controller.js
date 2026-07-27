@@ -2,6 +2,54 @@ const Student = require('../models/Student');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 
+const calculateProfileCompletion = (student) => {
+  const data = student?.toObject ? student.toObject() : student || {};
+
+  const checks = [
+    !!data.name,
+    !!data.email,
+    !!data.phone,
+    !!data.avatarUrl,
+    !!data.rollNo,
+    !!data.branch,
+    !!data.batchYear,
+    !!data.gender,
+    !!data.category,
+    !!data.education?.tenth?.institution,
+    !!data.education?.tenth?.board,
+    Number(data.education?.tenth?.percentage || 0) > 0,
+    !!data.education?.twelfth?.institution,
+    !!data.education?.twelfth?.board,
+    Number(data.education?.twelfth?.percentage || 0) > 0,
+    !!data.education?.graduation?.university,
+    !!data.education?.graduation?.degree,
+    !!data.education?.graduation?.branch,
+    Number(data.education?.graduation?.cgpa || 0) > 0,
+    Array.isArray(data.education?.graduation?.sgpaPerSemester) && data.education.graduation.sgpaPerSemester.length > 0,
+    Array.isArray(data.skills) && data.skills.length > 0,
+    Array.isArray(data.projects) && data.projects.length > 0,
+    Array.isArray(data.internships) && data.internships.length > 0,
+    Array.isArray(data.certificates) && data.certificates.length > 0,
+    Array.isArray(data.resumes) && data.resumes.length > 0,
+    !!data.education?.tenth?.marksheetUrl,
+    !!data.education?.twelfth?.marksheetUrl,
+  ];
+
+  const completed = checks.filter(Boolean).length;
+  return Math.min(100, Math.round((completed / checks.length) * 100));
+};
+
+const serializeStudent = (student) => {
+  const data = student?.toObject ? student.toObject() : student;
+  if (!data) return data;
+
+  return {
+    ...data,
+    id: data._id?.toString?.() || data.id,
+    profileCompletionPercentage: calculateProfileCompletion(data),
+  };
+};
+
 // @desc    Get all students (with filtering)
 // @route   GET /api/students
 // @access  Private (coordinator, cell, admin)
@@ -36,7 +84,12 @@ const getStudents = async (req, res) => {
 
     const total = await Student.countDocuments(query);
 
-    res.json({ students, total, page: Number(page), pages: Math.ceil(total / limit) });
+    res.json({
+      students: students.map(serializeStudent),
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -51,7 +104,7 @@ const getStudentById = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
-    res.json(student);
+    res.json(serializeStudent(student));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -66,7 +119,7 @@ const getMyProfile = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: 'Student profile not found' });
     }
-    res.json(student);
+    res.json(serializeStudent(student));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -98,20 +151,7 @@ const updateStudent = async (req, res) => {
       });
     }
 
-    // Calculate Profile Completion Percentage
-    let profileCompletionPercentage = 30; // base
-    const dataToCalculate = { ...student.toObject(), ...req.body };
-    
-    if (dataToCalculate.phone) profileCompletionPercentage += 10;
-    if (dataToCalculate.education?.tenth?.percentage) profileCompletionPercentage += 10;
-    if (dataToCalculate.education?.twelfth?.percentage) profileCompletionPercentage += 10;
-    if (dataToCalculate.education?.graduation?.cgpa) profileCompletionPercentage += 15;
-    if (dataToCalculate.skills && dataToCalculate.skills.length > 0) profileCompletionPercentage += 10;
-    if (dataToCalculate.projects && dataToCalculate.projects.length > 0) profileCompletionPercentage += 10;
-    if (dataToCalculate.resumes && dataToCalculate.resumes.length > 0) profileCompletionPercentage += 5;
-    if (dataToCalculate.internships && dataToCalculate.internships.length > 0) profileCompletionPercentage += 5;
-    
-    profileCompletionPercentage = Math.min(100, profileCompletionPercentage);
+    const profileCompletionPercentage = calculateProfileCompletion({ ...student.toObject(), ...req.body });
     req.body.profileCompletionPercentage = profileCompletionPercentage;
 
     const updatedStudent = await Student.findByIdAndUpdate(
@@ -128,7 +168,7 @@ const updateStudent = async (req, res) => {
       await User.findByIdAndUpdate(student.userId, updateFields);
     }
 
-    res.json(updatedStudent);
+    res.json(serializeStudent(updatedStudent));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -141,7 +181,7 @@ const verifyStudent = async (req, res) => {
   try {
     const { status, remarks } = req.body;
 
-    if (!['verified', 'pending', 'rejected'].includes(status)) {
+    if (!['verified', 'pending', 'rejected', 'draft'].includes(status)) {
       return res.status(400).json({ message: 'Invalid verification status' });
     }
 
@@ -166,7 +206,7 @@ const verifyStudent = async (req, res) => {
       type: 'verification',
     });
 
-    res.json(student);
+    res.json(serializeStudent(student));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
