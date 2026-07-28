@@ -14,6 +14,6 @@ router.get('/', protect, getDrives);
 router.get('/:id', protect, getDriveById);
 router.post('/', protect, authorize('placement_cell', 'super_admin'), createDrive);
 router.put('/:id', protect, authorize('placement_cell', 'super_admin'), updateDrive);
-router.delete('/:id', protect, authorize('super_admin'), deleteDrive);
+router.delete('/:id', protect, authorize('placement_cell', 'super_admin'), deleteDrive);
 
 module.exports = router;

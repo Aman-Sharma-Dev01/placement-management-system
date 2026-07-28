@@ -14,6 +14,7 @@ import {
   Users,
   Edit,
   Trash2,
+  ExternalLink,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PlacementDrive } from '../../types';
@@ -666,6 +667,26 @@ export const JobProfileView: React.FC = () => {
                           ))}
                         </ul>
                       </div>
+
+                      {selectedDrive.thirdPartyLinks && selectedDrive.thirdPartyLinks.length > 0 && (
+                        <div>
+                          <h5 className="text-[11.5px] font-semibold uppercase text-gray-400 tracking-wider mb-3">Third-Party Job Links</h5>
+                          <div className="flex flex-wrap gap-2.5">
+                            {selectedDrive.thirdPartyLinks.map((link, idx) => (
+                              <a
+                                key={idx}
+                                href={link.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-md text-[12.5px] font-semibold transition-colors"
+                              >
+                                <ExternalLink size={14} />
+                                {link.label || 'External Link'}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 

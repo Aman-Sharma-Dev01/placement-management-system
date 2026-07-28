@@ -14,7 +14,8 @@ import {
   Trophy,
   X,
   Loader2,
-  Trash2
+  Trash2,
+  XCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { uploadApi } from '../../api/upload.api';

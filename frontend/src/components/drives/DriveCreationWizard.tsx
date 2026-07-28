@@ -96,6 +96,22 @@ export const DriveCreationWizard: React.FC = () => {
   const [newStageName, setNewStageName] = useState('');
   const [newStageType, setNewStageType] = useState<HiringStage['type']>('technical_interview');
 
+  const [thirdPartyLinks, setThirdPartyLinks] = useState<{ label: string; url: string }[]>([]);
+
+  const addThirdPartyLink = () => {
+    setThirdPartyLinks([...thirdPartyLinks, { label: '', url: '' }]);
+  };
+
+  const removeThirdPartyLink = (index: number) => {
+    setThirdPartyLinks(thirdPartyLinks.filter((_, i) => i !== index));
+  };
+
+  const updateThirdPartyLink = (index: number, field: 'label' | 'url', value: string) => {
+    const newLinks = [...thirdPartyLinks];
+    newLinks[index] = { ...newLinks[index], [field]: value };
+    setThirdPartyLinks(newLinks);
+  };
+
   const addStage = () => {
     if (!newStageName.trim()) return;
     setStages([
@@ -152,6 +168,7 @@ export const DriveCreationWizard: React.FC = () => {
         stages: stages,
         requiredDocuments: requiredDocuments,
         externalApplyUrl: formValues.externalApplyUrl,
+        thirdPartyLinks: thirdPartyLinks.filter(link => link.label.trim() || link.url.trim()),
         totalEligibleStudentsCount: 350,
       };
 
@@ -436,6 +453,45 @@ export const DriveCreationWizard: React.FC = () => {
                 placeholder="If candidates must also register on company careers portal"
                 className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
               />
+            </div>
+
+            <div className="pt-2 border-t border-gray-100 mt-2">
+              <label className="block text-[12px] font-medium text-gray-700 mb-2">Third-Party Job Links (Optional)</label>
+              <div className="space-y-2">
+                {thirdPartyLinks.map((link, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={link.label}
+                      onChange={(e) => updateThirdPartyLink(index, 'label', e.target.value)}
+                      placeholder="e.g. LinkedIn, Glassdoor"
+                      className="w-1/3 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[12.5px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={(e) => updateThirdPartyLink(index, 'url', e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-[12.5px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeThirdPartyLink(index)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addThirdPartyLink}
+                  className="flex items-center gap-1 text-[12px] text-emerald-600 font-medium hover:text-emerald-700 mt-1"
+                >
+                  <Plus size={14} />
+                  <span>Add another third-party link</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

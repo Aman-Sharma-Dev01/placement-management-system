@@ -8,6 +8,7 @@ export type ApplicationStatus = 'applied' | 'under_review' | 'shortlisted' | 'of
 
 export interface Student {
   id: string;
+  _id?: string;
   supersetId: string;
   name: string;
   email: string;
@@ -147,6 +148,7 @@ export interface PlacementDrive {
   stages: HiringStage[];
   requiredDocuments: string[];
   externalApplyUrl?: string;
+  thirdPartyLinks?: { label: string; url: string }[];
   importantNotice?: string;
   
   totalEligibleStudentsCount: number;

@@ -82,6 +82,12 @@ const placementDriveSchema = new mongoose.Schema(
     stages: { type: [hiringStageSchema], default: [] },
     requiredDocuments: { type: [String], default: [] },
     externalApplyUrl: { type: String, default: '' },
+    thirdPartyLinks: [
+      {
+        label: { type: String, default: '' },
+        url: { type: String, default: '' },
+      },
+    ],
     importantNotice: { type: String, default: '' },
 
     totalEligibleStudentsCount: { type: Number, default: 0 },

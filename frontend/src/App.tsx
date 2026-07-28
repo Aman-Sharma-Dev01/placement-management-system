@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { OverviewDashboard } from './components/dashboard/OverviewDashboard';
@@ -11,6 +12,7 @@ import { CompaniesDirectory } from './components/companies/CompaniesDirectory';
 import { AnalyticsReports } from './components/analytics/AnalyticsReports';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuthPage } from './components/auth/AuthPage';
+import  LandingPage  from './components/landing/LandingPage';
 
 const MainContent: React.FC = () => {
   const { activeTab, role } = useApp();
@@ -65,7 +67,6 @@ export default function App() {
 
   const handleLoginSuccess = (user: any, token: string) => {
     setIsAuthenticated(true);
-    // User data is already in localStorage from AuthPage
   };
 
   const handleLogout = () => {
@@ -79,15 +80,31 @@ export default function App() {
     return <div className="min-h-screen bg-slate-950 flex items-center justify-center">Loading...</div>;
   }
 
-  if (!isAuthenticated) {
-    return <AuthPage onLoginSuccess={handleLoginSuccess} />;
-  }
-
   return (
-    <AppProvider>
-      <AppLayout>
-        <MainContent />
-      </AppLayout>
-    </AppProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={!isAuthenticated ? (
+          <LandingPage />
+        ) : (
+          <Navigate to="/app" replace />
+        )} />
+        
+        <Route path="/app/*" element={isAuthenticated ? (
+          <AppProvider>
+            <AppLayout onLogout={handleLogout}>
+              <MainContent />
+            </AppLayout>
+          </AppProvider>
+        ) : (
+          <Navigate to="/" replace />
+        )} />
+
+        <Route path="/login" element={!isAuthenticated ? (
+          <AuthPage onLoginSuccess={handleLoginSuccess} />
+        ) : (
+          <Navigate to="/app" replace />
+        )} />
+      </Routes>
+    </Router>
   );
 }

@@ -14,7 +14,8 @@ import {
   Trash2,
   Calendar,
   IndianRupee,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 import { EditDriveModal } from './EditDriveModal';
 
@@ -214,6 +215,26 @@ export const AdminJobProfileView: React.FC<AdminJobProfileViewProps> = ({ drive 
                     <li key={idx}>{req}</li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {drive.thirdPartyLinks && drive.thirdPartyLinks.length > 0 && (
+              <div>
+                <h4 className="text-[13px] font-bold text-gray-900 mb-2">Third-Party Job Links</h4>
+                <div className="flex flex-wrap gap-2.5">
+                  {drive.thirdPartyLinks.map((link, idx) => (
+                    <a
+                      key={idx}
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-md text-[12.5px] font-semibold transition-colors"
+                    >
+                      <ExternalLink size={14} />
+                      {link.label || 'External Link'}
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
