@@ -7,10 +7,15 @@ import {
   X,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  FileText,
+  BookOpen,
+  Briefcase,
+  Trophy
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Application, ApplicationStatus } from '../../types';
+import { Application, ApplicationStatus, Student } from '../../types';
 import { toast } from '../../utils/toast';
 
 export const ApplicationsTracker: React.FC = () => {
@@ -42,6 +47,7 @@ export const ApplicationsTracker: React.FC = () => {
   const [advanceModalVisible, setAdvanceModalVisible] = useState(false);
   const [feedbackInput, setFeedbackInput] = useState('');
   const [isOfferConfirmed, setIsOfferConfirmed] = useState(false);
+  const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<Student | null>(null);
 
   // Students can only see their own applications
   const baseApplications = role === 'student'
@@ -171,11 +177,15 @@ export const ApplicationsTracker: React.FC = () => {
       return;
     }
 
-    const headers = ['Applicant Name', 'Email', 'Phone', 'Roll No', 'Branch', 'CGPA', 'Company', 'Job Title', 'Status', 'Applied On'];
+    const headers = ['Applicant Name', 'Email', 'Phone', 'Roll No', 'Branch', 'CGPA', 'Company', 'Job Title', 'Status', 'Applied On', 'Resume Link'];
     const rows = filteredApplications.map(app => {
       const student = students.find(s => s.id === app.studentId);
       const drive = drives.find(d => d.id === app.driveId);
       if (!student || !drive) return null;
+
+      const primaryResume = student.resumes?.find(r => r.isPrimary);
+      const resumeUrl = primaryResume?.fileUrl || (student.resumes?.[0]?.fileUrl || '');
+
       return [
         `"${student.name}"`, 
         `"${student.email || ''}"`, 
@@ -186,7 +196,8 @@ export const ApplicationsTracker: React.FC = () => {
         `"${drive.companyName}"`, 
         `"${drive.jobTitle}"`, 
         app.status, 
-        `"${app.appliedAt}"`
+        `"${app.appliedAt}"`,
+        `"${resumeUrl}"`
       ];
     }).filter(r => r !== null);
 
@@ -293,7 +304,7 @@ export const ApplicationsTracker: React.FC = () => {
                 onClick={handleExport}
                 className="flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors"
               >
-                <Download size={14} /> Export CSV
+                <Download size={14} /> Export CSV (with Resumes)
               </button>
             )}
           </div>
@@ -357,7 +368,17 @@ export const ApplicationsTracker: React.FC = () => {
                           {student?.avatarUrl ? <img src={student.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <User size={14} />}
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-900 leading-tight">{student?.name || 'Student'}</div>
+                          <div className="font-semibold text-gray-900 leading-tight flex items-center gap-2">
+                            {student?.name || 'Student'}
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setSelectedStudentForDetail(student || null); }}
+                                className="text-emerald-600 hover:text-emerald-800 text-[10.5px] font-medium underline underline-offset-2"
+                              >
+                                View Full Profile
+                              </button>
+                            )}
+                          </div>
                           <div className="text-[11px] text-gray-500">CGPA: {student?.education?.graduation?.cgpa || '-'} | {student?.branch || '-'}</div>
                         </div>
                       </div>
@@ -542,6 +563,228 @@ export const ApplicationsTracker: React.FC = () => {
                   : `Rollout Offer to ${selectedAppsInfo.apps.length} Student${selectedAppsInfo.apps.length > 1 ? 's' : ''}`
                 }
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Detail Drawer */}
+      {selectedStudentForDetail && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedStudentForDetail(null)}></div>
+          <div className="relative w-full max-w-lg bg-white h-full shadow-xl flex flex-col border-l border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex items-center gap-2 text-gray-900">
+                <Eye size={18} className="text-emerald-600" />
+                <h2 className="font-semibold text-[15px]">Student Profile</h2>
+              </div>
+              <button onClick={() => setSelectedStudentForDetail(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-50">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Header Card */}
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-[15px]">{selectedStudentForDetail.name}</h3>
+                  <span className="text-[12px] text-gray-500">Roll No: {selectedStudentForDetail.rollNo} | ID: {selectedStudentForDetail.supersetId}</span>
+                </div>
+                <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  selectedStudentForDetail.verificationStatus === 'verified' ? 'bg-green-100 text-green-700 border border-green-200' :
+                  selectedStudentForDetail.verificationStatus === 'pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-red-100 text-red-700 border border-red-200'
+                }`}>
+                  {selectedStudentForDetail.verificationStatus}
+                </span>
+              </div>
+
+              {/* Basic Info */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><User size={14} className="text-gray-400" /> Basic Information</h4>
+                <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg text-[12.5px] space-y-1.5">
+                  <div className="flex justify-between"><span className="text-gray-500">Email:</span> <strong className="text-gray-900">{selectedStudentForDetail.email}</strong></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Phone:</span> <strong className="text-gray-900">{selectedStudentForDetail.phone || '—'}</strong></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Branch:</span> <strong className="text-gray-900">{selectedStudentForDetail.branch}</strong></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Gender:</span> <strong className="text-gray-900">{selectedStudentForDetail.gender}</strong></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Category:</span> <strong className="text-gray-900">{selectedStudentForDetail.category}</strong></div>
+                </div>
+              </div>
+
+              {/* Education */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><BookOpen size={14} className="text-gray-400" /> Academic Scores</h4>
+                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg space-y-1.5 text-[12.5px] text-gray-700">
+                  <div className="flex justify-between"><span>Graduation CGPA:</span> <strong className="text-gray-900">{selectedStudentForDetail.education.graduation.cgpa}</strong></div>
+                  <div className="flex justify-between"><span>{selectedStudentForDetail.education?.twelfthOrDiploma === 'diploma' ? 'Diploma' : '12th'} Percentage:</span> <strong className="text-gray-900">{(selectedStudentForDetail.education as any)[selectedStudentForDetail.education?.twelfthOrDiploma === 'diploma' ? 'diploma' : 'twelfth']?.percentage || 0}%</strong></div>
+                  <div className="flex justify-between"><span>10th Percentage:</span> <strong className="text-gray-900">{selectedStudentForDetail.education.tenth.percentage}%</strong></div>
+                  <div className="flex justify-between"><span>Active Backlogs:</span> <strong className="text-gray-900">{selectedStudentForDetail.education.graduation.backlogs.active}</strong></div>
+                </div>
+                {selectedStudentForDetail.education.graduation.sgpaPerSemester?.length > 0 && (
+                  <div className="mt-2">
+                    <span className="text-[11px] font-semibold text-gray-500 block mb-1.5">Semester SGPA:</span>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {selectedStudentForDetail.education.graduation.sgpaPerSemester.map((sgpa, idx) => (
+                        <div key={idx} className="bg-white border border-gray-200 rounded p-1.5 text-center">
+                          <span className="text-[9px] text-gray-400 block">Sem {idx + 1}</span>
+                          <span className="text-[11px] font-semibold text-gray-900">{sgpa}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Profile Completeness */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><CheckCircle2 size={14} className="text-gray-400" /> Profile Completeness</h4>
+                <div className="p-3 bg-white border border-gray-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-medium text-gray-600">Completion</span>
+                    <span className="text-[12px] font-bold text-emerald-700">{selectedStudentForDetail.profileCompletionPercentage || 0}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-2">
+                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${selectedStudentForDetail.profileCompletionPercentage || 0}%` }}></div>
+                  </div>
+                  <div className="text-[10px] text-gray-400">{26 - Math.round(((selectedStudentForDetail.profileCompletionPercentage || 0) / 100) * 26) || 0} items remaining</div>
+                </div>
+              </div>
+
+              {/* Marksheets */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><FileText size={14} className="text-gray-400" /> Uploaded Documents</h4>
+                <div className="space-y-2">
+                  {(() => {
+                    const isDip = selectedStudentForDetail.education?.twelfthOrDiploma === 'diploma';
+                    const hKey = isDip ? 'diploma' : 'twelfth';
+                    const hLabel = isDip ? 'Diploma' : '12th';
+                    const hUrl = (selectedStudentForDetail.education as any)?.[hKey]?.marksheetUrl;
+                    if (hUrl) {
+                      return (
+                        <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-white shadow-sm">
+                          <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
+                            <FileText size={14} className="text-red-500" /> {hLabel} Marksheet
+                          </span>
+                          <a href={hUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50 text-gray-400 text-[12.5px]">
+                        <span>No {hLabel} Marksheet</span>
+                      </div>
+                    );
+                  })()}
+
+                  {selectedStudentForDetail.education?.tenth?.marksheetUrl ? (
+                    <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-white shadow-sm">
+                      <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
+                        <FileText size={14} className="text-red-500" /> Class 10 Marksheet
+                      </span>
+                      <a href={selectedStudentForDetail.education.tenth.marksheetUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
+                    </div>
+                  ) : (
+                    <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50 text-gray-400 text-[12.5px]">
+                      <span>No Class 10 Marksheet</span>
+                    </div>
+                  )}
+
+                  {selectedStudentForDetail.resumes?.map((res, idx) => (
+                    <div key={idx} className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-white shadow-sm">
+                      <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
+                        <FileText size={14} className="text-emerald-500" /> {res.name} {res.isPrimary && <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded">Primary</span>}
+                      </span>
+                      {res.fileUrl ? (
+                        <a href={res.fileUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View / Download</a>
+                      ) : (
+                        <span className="text-gray-400 text-[11.5px]">N/A</span>
+                      )}
+                    </div>
+                  ))}
+                  {(!selectedStudentForDetail.resumes || selectedStudentForDetail.resumes.length === 0) && (
+                    <div className="p-3 border border-dashed border-gray-200 rounded-lg text-center text-gray-400 text-[12.5px]">No resumes uploaded</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Skills */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><CheckCircle2 size={14} className="text-gray-400" /> Skills</h4>
+                {selectedStudentForDetail.skills?.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedStudentForDetail.skills.map((skill, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-white border border-gray-200 text-gray-600 rounded text-[11px] font-medium">{skill}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No skills added</div>
+                )}
+              </div>
+
+              {/* Internships */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><Briefcase size={14} className="text-gray-400" /> Internships & Work Experience</h4>
+                {selectedStudentForDetail.internships?.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedStudentForDetail.internships.map((intern, idx) => (
+                      <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg text-[12px]">
+                        <div className="font-semibold text-gray-900">{intern.role} at {intern.company}</div>
+                        <div className="text-gray-500 mb-1">{intern.duration}</div>
+                        <p className="text-gray-600 mb-1">{intern.description}</p>
+                        {(intern as any).certificateUrl && (
+                          <a href={(intern as any).certificateUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline">View Certificate</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No internships added</div>
+                )}
+              </div>
+
+              {/* Projects */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><Trophy size={14} className="text-gray-400" /> Projects</h4>
+                {selectedStudentForDetail.projects?.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedStudentForDetail.projects.map((proj, idx) => (
+                      <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg text-[12px]">
+                        <div className="font-semibold text-gray-900">{proj.title}</div>
+                        <p className="text-gray-600 mb-1">{proj.description}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {proj.techStack?.map((tech, i) => (
+                            <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{tech}</span>
+                          ))}
+                        </div>
+                        {proj.link && (
+                          <a href={proj.link.startsWith('http') ? proj.link : `https://${proj.link}`} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline block mt-1">View Project</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No projects added</div>
+                )}
+              </div>
+
+              {/* Certificates */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2 flex items-center gap-1.5"><Trophy size={14} className="text-gray-400" /> Certificates & Accomplishments</h4>
+                {selectedStudentForDetail.certificates?.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedStudentForDetail.certificates.map((cert, idx) => (
+                      <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg text-[12px]">
+                        <div className="font-semibold text-gray-900">{cert.title}</div>
+                        <div className="text-gray-500 mb-1">Issued by: {cert.issuer} | {cert.issueDate}</div>
+                        {cert.credentialUrl && (
+                          <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline">View Credential</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No certificates added</div>
+                )}
+              </div>
             </div>
           </div>
         </div>

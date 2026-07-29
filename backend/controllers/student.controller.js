@@ -5,6 +5,10 @@ const Notification = require('../models/Notification');
 const calculateProfileCompletion = (student) => {
   const data = student?.toObject ? student.toObject() : student || {};
 
+  const isDiploma = data.education?.twelfthOrDiploma === 'diploma';
+  const hsKey = isDiploma ? 'diploma' : 'twelfth';
+  const hsLabel = isDiploma ? 'Diploma' : '12th';
+
   const checks = [
     !!data.name,
     !!data.email,
@@ -18,11 +22,10 @@ const calculateProfileCompletion = (student) => {
     !!data.education?.tenth?.institution,
     !!data.education?.tenth?.board,
     Number(data.education?.tenth?.percentage || 0) > 0,
-    !!data.education?.twelfth?.institution,
-    !!data.education?.twelfth?.board,
-    Number(data.education?.twelfth?.percentage || 0) > 0,
+    !!data.education?.[hsKey]?.institution,
+    !!data.education?.[hsKey]?.board,
+    Number(data.education?.[hsKey]?.percentage || 0) > 0,
     !!data.education?.graduation?.university,
-    !!data.education?.graduation?.degree,
     !!data.education?.graduation?.branch,
     Number(data.education?.graduation?.cgpa || 0) > 0,
     Array.isArray(data.education?.graduation?.sgpaPerSemester) && data.education.graduation.sgpaPerSemester.length > 0,
@@ -32,7 +35,7 @@ const calculateProfileCompletion = (student) => {
     Array.isArray(data.certificates) && data.certificates.length > 0,
     Array.isArray(data.resumes) && data.resumes.length > 0,
     !!data.education?.tenth?.marksheetUrl,
-    !!data.education?.twelfth?.marksheetUrl,
+    !!data.education?.[hsKey]?.marksheetUrl,
   ];
 
   const completed = checks.filter(Boolean).length;

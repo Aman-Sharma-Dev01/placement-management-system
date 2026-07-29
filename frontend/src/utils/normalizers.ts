@@ -22,7 +22,15 @@ const defaultEducation = {
     passingYear: 0,
     marksheetUrl: '',
   },
+  twelfthOrDiploma: 'twelfth' as 'twelfth' | 'diploma',
   twelfth: {
+    institution: '',
+    board: '',
+    percentage: 0,
+    passingYear: 0,
+    marksheetUrl: '',
+  },
+  diploma: {
     institution: '',
     board: '',
     percentage: 0,
@@ -31,7 +39,6 @@ const defaultEducation = {
   },
   graduation: {
     university: '',
-    degree: '',
     branch: '',
     cgpa: 0,
     sgpaPerSemester: [],

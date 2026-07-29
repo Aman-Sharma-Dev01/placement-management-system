@@ -57,10 +57,11 @@ const register = async (req, res) => {
         profileCompletionPercentage: 30,
         education: {
           tenth: { institution: '', board: '', percentage: 0, passingYear: 0 },
+          twelfthOrDiploma: 'twelfth',
           twelfth: { institution: '', board: '', percentage: 0, passingYear: 0 },
+          diploma: { institution: '', board: '', percentage: 0, passingYear: 0 },
           graduation: {
             university: '',
-            degree: '',
             branch: branch,
             cgpa: 0,
             sgpaPerSemester: [],

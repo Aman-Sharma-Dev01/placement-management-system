@@ -24,7 +24,81 @@ import { toast } from '../../utils/toast';
 export const StudentProfileView: React.FC = () => {
   const { activeStudent, updateStudentData, role, verifyStudentProfile } = useApp();
 
+  const savedUser = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const isNonStudent = role !== 'student';
+
+  if (isNonStudent && !savedUser) {
+    return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
+  }
+
+  if (!isNonStudent && (!activeStudent || !activeStudent.name)) {
+    return <div className="p-8 text-center text-gray-500">Loading student profile...</div>;
+  }
+
   const [activeSection, setActiveSection] = useState<string>('education');
+
+  // Non-student viewing their own profile (no student loaded)
+  if (isNonStudent && (!activeStudent || !activeStudent.name)) {
+    const roleLabels: Record<string, string> = {
+      placement_coordinator: 'Placement Coordinator',
+      placement_cell: 'Placement Cell',
+      super_admin: 'Super Admin',
+    };
+    return (
+      <div className="flex flex-col space-y-4 text-[13px] text-gray-900">
+        <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xl font-bold border-2 border-white shadow-sm shrink-0">
+              {savedUser?.name?.charAt(0) || 'A'}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="m-0 text-gray-900 text-[16px] font-semibold">{savedUser?.name || 'Administrator'}</h2>
+                <span className="px-2 py-0.5 rounded text-[10px] font-medium tracking-wide bg-emerald-100 text-emerald-700">
+                  {roleLabels[role] || role}
+                </span>
+              </div>
+              <div className="text-[12px] text-gray-500">
+                Email: <strong className="text-gray-800">{savedUser?.email || '—'}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
+          <div className="border-b border-gray-200 pb-2">
+            <h3 className="m-0 text-[11.5px] font-bold uppercase text-gray-500 tracking-wider">Profile Details</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+              <span className="text-gray-500 block text-[11px] mb-1">Full Name</span>
+              <span className="font-medium text-gray-900 text-[13px]">{savedUser?.name || '—'}</span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+              <span className="text-gray-500 block text-[11px] mb-1">Email</span>
+              <span className="font-medium text-gray-900 text-[13px]">{savedUser?.email || '—'}</span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+              <span className="text-gray-500 block text-[11px] mb-1">Role</span>
+              <span className="font-medium text-gray-900 text-[13px]">{roleLabels[role] || role}</span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+              <span className="text-gray-500 block text-[11px] mb-1">Account Type</span>
+              <span className="font-medium text-gray-900 text-[13px]">{role === 'super_admin' ? 'Super Administrator' : 'Administrative'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const [editBasicModalVisible, setEditBasicModalVisible] = useState(false);
   const [addProjectModalVisible, setAddProjectModalVisible] = useState(false);
   const [editEducationModalVisible, setEditEducationModalVisible] = useState(false);
@@ -40,9 +114,11 @@ export const StudentProfileView: React.FC = () => {
   const [editInternshipIndex, setEditInternshipIndex] = useState<number>(-1);
   const [editCertificateIndex, setEditCertificateIndex] = useState<number>(-1);
 
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+const fileInputRef = React.useRef<HTMLInputElement>(null);
   const tenthInputRef = React.useRef<HTMLInputElement>(null);
   const twelfthInputRef = React.useRef<HTMLInputElement>(null);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Early return if data is not yet loaded
   if (!activeStudent || !activeStudent.name) {
@@ -65,14 +141,16 @@ export const StudentProfileView: React.FC = () => {
   });
 
   const [educationForm, setEducationForm] = useState({
+    twelfthOrDiploma: (activeStudent?.education?.twelfthOrDiploma || 'twelfth') as 'twelfth' | 'diploma',
     graduation: {
       university: activeStudent?.education?.graduation?.university || '',
-      degree: activeStudent?.education?.graduation?.degree || '',
       branch: activeStudent?.education?.graduation?.branch || '',
       cgpa: activeStudent?.education?.graduation?.cgpa || 0,
       passingYear: activeStudent?.education?.graduation?.passingYear || 0,
+      sgpaPerSemester: activeStudent?.education?.graduation?.sgpaPerSemester || [],
       backlogs: {
         active: activeStudent?.education?.graduation?.backlogs?.active || 0,
+        history: activeStudent?.education?.graduation?.backlogs?.history || 0,
       }
     },
     twelfth: {
@@ -80,12 +158,50 @@ export const StudentProfileView: React.FC = () => {
       board: activeStudent?.education?.twelfth?.board || '',
       percentage: activeStudent?.education?.twelfth?.percentage || 0,
     },
+    diploma: {
+      institution: activeStudent?.education?.diploma?.institution || '',
+      board: activeStudent?.education?.diploma?.board || '',
+      percentage: activeStudent?.education?.diploma?.percentage || 0,
+    },
     tenth: {
       institution: activeStudent?.education?.tenth?.institution || '',
       board: activeStudent?.education?.tenth?.board || '',
       percentage: activeStudent?.education?.tenth?.percentage || 0,
     }
   });
+
+  React.useEffect(() => {
+    setEducationForm({
+      twelfthOrDiploma: (activeStudent?.education?.twelfthOrDiploma || 'twelfth') as 'twelfth' | 'diploma',
+      graduation: {
+        university: activeStudent?.education?.graduation?.university || '',
+        branch: activeStudent?.education?.graduation?.branch || '',
+        cgpa: activeStudent?.education?.graduation?.cgpa || 0,
+        passingYear: activeStudent?.education?.graduation?.passingYear || 0,
+        sgpaPerSemester: [...(activeStudent?.education?.graduation?.sgpaPerSemester || [])],
+        backlogs: {
+          active: activeStudent?.education?.graduation?.backlogs?.active || 0,
+          history: activeStudent?.education?.graduation?.backlogs?.history || 0,
+        }
+      },
+      twelfth: {
+        institution: activeStudent?.education?.twelfth?.institution || '',
+        board: activeStudent?.education?.twelfth?.board || '',
+        percentage: activeStudent?.education?.twelfth?.percentage || 0,
+      },
+      diploma: {
+        institution: activeStudent?.education?.diploma?.institution || '',
+        board: activeStudent?.education?.diploma?.board || '',
+        percentage: activeStudent?.education?.diploma?.percentage || 0,
+      },
+      tenth: {
+        institution: activeStudent?.education?.tenth?.institution || '',
+        board: activeStudent?.education?.tenth?.board || '',
+        percentage: activeStudent?.education?.tenth?.percentage || 0,
+      }
+    });
+    setSkillsForm(activeStudent?.skills?.join(', ') || '');
+  }, [activeStudent?._id, activeStudent?.id]);
 
   const [skillsForm, setSkillsForm] = useState(activeStudent?.skills?.join(', ') || '');
 
@@ -163,8 +279,10 @@ export const StudentProfileView: React.FC = () => {
       ...activeStudent,
       education: {
         ...activeStudent.education,
+        twelfthOrDiploma: educationForm.twelfthOrDiploma,
         graduation: { ...activeStudent.education.graduation, ...educationForm.graduation },
         twelfth: { ...activeStudent.education.twelfth, ...educationForm.twelfth },
+        diploma: { ...activeStudent.education.diploma, ...educationForm.diploma },
         tenth: { ...activeStudent.education.tenth, ...educationForm.tenth },
       }
     };
@@ -190,7 +308,7 @@ export const StudentProfileView: React.FC = () => {
     if (editInternshipIndex !== -1) {
       updatedInternships[editInternshipIndex] = { ...updatedInternships[editInternshipIndex], ...internshipForm };
     } else {
-      updatedInternships.push(internshipForm);
+      updatedInternships.push({ id: `intern-${Date.now()}`, ...internshipForm } as any);
     }
 
     const updated = {
@@ -216,7 +334,7 @@ export const StudentProfileView: React.FC = () => {
     if (editCertificateIndex !== -1) {
       updatedCertificates[editCertificateIndex] = { ...updatedCertificates[editCertificateIndex], ...certificateForm };
     } else {
-      updatedCertificates.push(certificateForm);
+      updatedCertificates.push({ id: `cert-${Date.now()}`, ...certificateForm } as any);
     }
 
     const updated = {
@@ -265,13 +383,13 @@ export const StudentProfileView: React.FC = () => {
     }
   };
 
-  const handleMarksheetUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'tenth' | 'twelfth') => {
+  const handleMarksheetUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'tenth' | 'twelfth' | 'diploma') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       if (type === 'tenth') setIsUploading10th(true);
-      if (type === 'twelfth') setIsUploading12th(true);
+      if (type === 'twelfth' || type === 'diploma') setIsUploading12th(true);
       
       const res = await uploadApi.marksheet(file);
       
@@ -294,7 +412,7 @@ export const StudentProfileView: React.FC = () => {
         setIsUploading10th(false);
         if (tenthInputRef.current) tenthInputRef.current.value = '';
       }
-      if (type === 'twelfth') {
+      if (type === 'twelfth' || type === 'diploma') {
         setIsUploading12th(false);
         if (twelfthInputRef.current) twelfthInputRef.current.value = '';
       }
@@ -306,11 +424,28 @@ export const StudentProfileView: React.FC = () => {
     try {
       const updated = {
         ...activeStudent,
-        resumes: activeStudent.resumes.filter((r) => r.id !== resumeId && r._id !== resumeId)
+        resumes: activeStudent.resumes.filter((r: any) => r.id !== resumeId && r._id !== resumeId)
       };
       await updateStudentData(updated);
     } catch (error) {
       toast.error('Failed to delete resume');
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingAvatar(true);
+      const res = await uploadApi.avatar(file);
+      const updated = { ...activeStudent, avatarUrl: res.url };
+      await updateStudentData(updated);
+      toast.success('Profile picture updated');
+    } catch (error) {
+      toast.error('Failed to upload avatar');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
     }
   };
 
@@ -323,28 +458,68 @@ export const StudentProfileView: React.FC = () => {
     { id: 'accomplishments', label: 'Accomplishments', icon: <Trophy size={16} /> },
     { id: 'resumes', label: 'Resumes & Documents', icon: <FileText size={16} /> },
   ];
+  const s = activeStudent;
+  const isDiplomaStudent = s.education?.twelfthOrDiploma === 'diploma';
+  const hsKey = isDiplomaStudent ? 'diploma' as const : 'twelfth' as const;
+  const hsLabel = isDiplomaStudent ? 'Diploma' : '12th';
   const checklistItems = [
-    { label: 'Basic Contact Info', done: !!activeStudent.phone && !!activeStudent.email },
-    { label: '10th Academic Records', done: !!activeStudent.education?.tenth?.percentage && !!activeStudent.education?.tenth?.marksheetUrl },
-    { label: '12th Academic Records', done: !!activeStudent.education?.twelfth?.percentage && !!activeStudent.education?.twelfth?.marksheetUrl },
-    { label: 'Graduation Details', done: !!activeStudent.education?.graduation?.cgpa && !!activeStudent.education?.graduation?.branch },
-    { label: 'Primary Resume', done: activeStudent.resumes?.some((r) => r.isPrimary) },
-    { label: 'Skills Added', done: activeStudent.skills && activeStudent.skills.length > 0 }
+    { label: 'Full Name', done: !!s.name },
+    { label: 'Email', done: !!s.email },
+    { label: 'Phone Number', done: !!s.phone },
+    { label: 'Avatar / Photo', done: !!s.avatarUrl },
+    { label: 'Roll Number', done: !!s.rollNo },
+    { label: 'Branch', done: !!s.branch },
+    { label: 'Batch Year', done: !!s.batchYear },
+    { label: 'Gender', done: !!s.gender },
+    { label: 'Category', done: !!s.category },
+    { label: '10th Institution', done: !!s.education?.tenth?.institution },
+    { label: '10th Board', done: !!s.education?.tenth?.board },
+    { label: '10th Percentage', done: Number(s.education?.tenth?.percentage || 0) > 0 },
+    { label: `${hsLabel} Institution`, done: !!(s.education as any)?.[hsKey]?.institution },
+    { label: `${hsLabel} Board`, done: !!(s.education as any)?.[hsKey]?.board },
+    { label: `${hsLabel} Percentage`, done: Number((s.education as any)?.[hsKey]?.percentage || 0) > 0 },
+    { label: 'University', done: !!s.education?.graduation?.university },
+    { label: 'Branch / Major', done: !!s.education?.graduation?.branch },
+    { label: 'CGPA', done: Number(s.education?.graduation?.cgpa || 0) > 0 },
+    { label: 'Semester SGPA', done: Array.isArray(s.education?.graduation?.sgpaPerSemester) && s.education.graduation.sgpaPerSemester.length > 0 },
+    { label: 'Skills', done: Array.isArray(s.skills) && s.skills.length > 0 },
+    { label: 'Projects', done: Array.isArray(s.projects) && s.projects.length > 0 },
+    { label: 'Internships', done: Array.isArray(s.internships) && s.internships.length > 0 },
+    { label: 'Certificates', done: Array.isArray(s.certificates) && s.certificates.length > 0 },
+    { label: 'Resume Uploaded', done: Array.isArray(s.resumes) && s.resumes.length > 0 },
+    { label: '10th Marksheet', done: !!s.education?.tenth?.marksheetUrl },
+    { label: `${hsLabel} Marksheet`, done: !!(s.education as any)?.[hsKey]?.marksheetUrl },
   ];
   const completedChecklistCount = checklistItems.filter(i => i.done).length;
-  const computedCompletionPercentage = Math.round((completedChecklistCount / checklistItems.length) * 100);
+  const computedCompletionPercentage = activeStudent.profileCompletionPercentage || 0;
 
   return (
     <div className="flex flex-col space-y-4 text-[13px] text-gray-900">
       {/* Verification Status Header Bar */}
       <div className="bg-white border border-gray-200 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xl font-bold border-2 border-white shadow-sm shrink-0 overflow-hidden">
-            {activeStudent.avatarUrl ? (
-              <img src={activeStudent.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              activeStudent.name.charAt(0)
-            )}
+          <div className="relative group">
+            <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xl font-bold border-2 border-white shadow-sm shrink-0 overflow-hidden cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
+              {activeStudent.avatarUrl ? (
+                <img src={activeStudent.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                activeStudent.name.charAt(0)
+              )}
+              <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {isUploadingAvatar ? (
+                  <Loader2 size={14} className="text-white animate-spin" />
+                ) : (
+                  <Upload size={14} className="text-white" />
+                )}
+              </div>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              ref={avatarInputRef}
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -444,24 +619,23 @@ export const StudentProfileView: React.FC = () => {
               <span className="font-semibold text-gray-700">Profile Completion</span>
               <span className="font-bold text-emerald-700">{computedCompletionPercentage}%</span>
             </div>
-            <div className="w-full bg-emerald-200/50 rounded-full h-1.5 overflow-hidden mb-4">
+            <div className="w-full bg-emerald-200/50 rounded-full h-1.5 overflow-hidden mb-3">
               <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${computedCompletionPercentage}%` }}></div>
             </div>
+            <div className="text-[10px] text-gray-500 mb-3">{completedChecklistCount}/{checklistItems.length} items completed</div>
             
-            <div className="space-y-2 border-t border-emerald-100 pt-3">
+            <div className="space-y-1.5 border-t border-emerald-100 pt-3 max-h-52 overflow-y-auto">
               <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Completion Checklist</span>
-              <div className="space-y-1.5">
-                {checklistItems.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-[11.5px]">
-                    {item.done ? (
-                      <CheckCircle2 size={14} className="text-green-500 shrink-0" />
-                    ) : (
-                      <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 shrink-0 flex items-center justify-center"></div>
-                    )}
-                    <span className={item.done ? "text-gray-700" : "text-gray-500"}>{item.label}</span>
-                  </div>
-                ))}
-              </div>
+              {checklistItems.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-[10.5px]">
+                  {item.done ? (
+                    <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                  ) : (
+                    <div className="w-3 h-3 rounded-full border-2 border-red-300 shrink-0 flex items-center justify-center"></div>
+                  )}
+                  <span className={item.done ? "text-gray-700" : "text-red-600 font-medium"}>{item.label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -543,7 +717,7 @@ export const StudentProfileView: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-semibold text-gray-900 text-[14px]">
-                      {activeStudent.education.graduation.degree} in {activeStudent.education.graduation.branch}
+                      B.Tech {activeStudent.education.graduation.branch}
                     </span>
                     <div className="text-[12px] text-gray-500 mt-0.5">
                       {activeStudent.education.graduation.university} (Batch {activeStudent.education.graduation.passingYear})
@@ -582,36 +756,40 @@ export const StudentProfileView: React.FC = () => {
 
               {/* 10th & 12th Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* 12th Standard */}
+                {/* 12th / Diploma Section */}
                 <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
                   <div className="flex justify-between items-start">
-                    <span className="font-semibold text-[13px] text-gray-900">12th Standard (Higher Secondary)</span>
+                    <span className="font-semibold text-[13px] text-gray-900">{hsLabel} Standard</span>
                     <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-medium text-[11px] rounded border border-emerald-100">
-                      {activeStudent.education.twelfth.percentage}%
+                      {(activeStudent.education as any)[hsKey]?.percentage || 0}%
                     </span>
                   </div>
                   <div className="text-[12px] text-gray-600 space-y-1">
-                    <div><strong className="font-medium text-gray-700">Institution:</strong> {activeStudent.education.twelfth.institution}</div>
-                    <div><strong className="font-medium text-gray-700">Board:</strong> {activeStudent.education.twelfth.board} ({activeStudent.education.twelfth.passingYear})</div>
+                    <div><strong className="font-medium text-gray-700">Institution:</strong> {(activeStudent.education as any)[hsKey]?.institution || '—'}</div>
+                    <div><strong className="font-medium text-gray-700">Board:</strong> {(activeStudent.education as any)[hsKey]?.board || '—'} ({(activeStudent.education as any)[hsKey]?.passingYear || '—'})</div>
                   </div>
                   <div className="pt-2 flex items-center justify-between">
-                    {activeStudent.education.twelfth.marksheetUrl ? (
-                      <a href={activeStudent.education.twelfth.marksheetUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline mt-1">
-                        <Download size={14} /> Class 12 Marksheet
+                    {(activeStudent.education as any)[hsKey]?.marksheetUrl ? (
+                      <a href={(activeStudent.education as any)[hsKey]?.marksheetUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline mt-1">
+                        <Download size={14} /> {hsLabel} Marksheet
                       </a>
                     ) : (
                       <span className="text-gray-400 text-[11px]">No marksheet uploaded</span>
                     )}
                     
-                    <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" ref={twelfthInputRef} onChange={(e) => handleMarksheetUpload(e, 'twelfth')} />
-                    <button 
-                      disabled={isUploading12th}
-                      onClick={() => twelfthInputRef.current?.click()}
-                      className="flex items-center gap-1 bg-white border border-gray-300 px-2 py-1 rounded text-[10.5px] font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      {isUploading12th ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />} 
-                      {isUploading12th ? 'Uploading...' : 'Upload'}
-                    </button>
+                    {(role === 'student' && activeStudent.verificationStatus !== 'verified') && (
+                      <>
+                        <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" ref={twelfthInputRef} onChange={(e) => handleMarksheetUpload(e, isDiplomaStudent ? 'diploma' : 'twelfth')} />
+                        <button 
+                          disabled={isUploading12th}
+                          onClick={() => twelfthInputRef.current?.click()}
+                          className="flex items-center gap-1 bg-white border border-gray-300 px-2 py-1 rounded text-[10.5px] font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          {isUploading12th ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />} 
+                          {isUploading12th ? 'Uploading...' : 'Upload'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -693,7 +871,7 @@ export const StudentProfileView: React.FC = () => {
                       <div className="flex-1">
                         <span className="font-semibold text-gray-900 text-[14px] block mb-1">{proj.title}</span>
                         {proj.link && (
-                          <a href={proj.link} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[12px] hover:underline">
+                          <a href={proj.link.startsWith('http') ? proj.link : `https://${proj.link}`} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[12px] hover:underline">
                             View Code / Live Link
                           </a>
                         )}
@@ -798,7 +976,7 @@ export const StudentProfileView: React.FC = () => {
                       )}
                       
                       <button 
-                        onClick={() => handleDeleteResume(res.id || res._id)}
+                        onClick={() => handleDeleteResume((res as any).id || (res as any)._id)}
                         className="flex items-center justify-center text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-100 px-2 py-1.5 rounded-md transition-colors"
                         title="Delete Resume"
                       >
@@ -888,13 +1066,13 @@ export const StudentProfileView: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-gray-600 text-[12.5px] m-0 leading-relaxed">{intern.description}</p>
-                    {intern.certificateUrl && (
-                      <div className="pt-1">
-                        <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline">
-                          <Download size={14} /> Download Certificate
-                        </a>
-                      </div>
-                    )}
+{intern.certificateUrl && (
+                  <div className="pt-1">
+                    <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 font-medium text-[12px] hover:underline">
+                      <Download size={14} /> Download Certificate
+                    </a>
+                  </div>
+                )}
                   </div>
                 )) : (
                   <div className="p-4 text-center text-gray-500 text-[13px] border border-dashed border-gray-300 rounded-lg">
@@ -1161,26 +1339,112 @@ export const StudentProfileView: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-[12px] font-medium text-gray-700 mb-1">Active Backlogs</label>
-                      <input type="number" value={educationForm.graduation.backlogs.active} onChange={(e) => setEducationForm({...educationForm, graduation: {...educationForm.graduation, backlogs: { active: parseInt(e.target.value) }}})} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
+                      <input type="number" value={educationForm.graduation.backlogs.active} onChange={(e) => setEducationForm({...educationForm, graduation: {...educationForm.graduation, backlogs: { active: parseInt(e.target.value), history: educationForm.graduation.backlogs.history }}})} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-medium text-gray-700 mb-1">Semester-wise SGPA</label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {educationForm.graduation.sgpaPerSemester.map((sgpa, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span className="text-[11px] text-gray-500 w-16 shrink-0">Sem {idx + 1}</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={sgpa}
+                            onChange={(e) => {
+                              const updated = [...educationForm.graduation.sgpaPerSemester];
+                              updated[idx] = parseFloat(e.target.value) || 0;
+                              setEducationForm({...educationForm, graduation: {...educationForm.graduation, sgpaPerSemester: updated}});
+                            }}
+                            className="flex-1 border border-gray-300 rounded-md px-2 py-1 text-[13px]"
+                            placeholder="0.0"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const s = educationForm.graduation.sgpaPerSemester.filter((_: any, i: number) => i !== idx);
+                              setEducationForm({...educationForm, graduation: {...educationForm.graduation, sgpaPerSemester: s}});
+                            }}
+                            className="text-red-400 hover:text-red-600 p-1"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                      {educationForm.graduation.sgpaPerSemester.length === 0 && (
+                        <div className="text-[11px] text-gray-400">No semesters added yet. Click "Add Semester" below.</div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEducationForm({...educationForm, graduation: {...educationForm.graduation, sgpaPerSemester: [...educationForm.graduation.sgpaPerSemester, 0]}})}
+                      className="mt-2 flex items-center gap-1 text-[11.5px] text-emerald-600 hover:text-emerald-800 font-medium"
+                    >
+                      <Plus size={12} /> Add Semester
+                    </button>
                   </div>
                 </div>
 
-                {/* 12th */}
+                {/* 12th / Diploma */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-gray-800 text-[13px] border-b pb-1">12th Standard</h4>
+                  <div className="flex items-center justify-between border-b pb-1">
+                    <h4 className="font-semibold text-gray-800 text-[13px]">After 10th Qualification</h4>
+                  </div>
+                  <div className="flex gap-4 mb-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="twelfthOrDiploma"
+                        value="twelfth"
+                        checked={educationForm.twelfthOrDiploma === 'twelfth'}
+                        onChange={() => setEducationForm({...educationForm, twelfthOrDiploma: 'twelfth'})}
+                        className="text-emerald-600"
+                      />
+                      <span className="text-[12.5px] text-gray-700">12th Standard</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="twelfthOrDiploma"
+                        value="diploma"
+                        checked={educationForm.twelfthOrDiploma === 'diploma'}
+                        onChange={() => setEducationForm({...educationForm, twelfthOrDiploma: 'diploma'})}
+                        className="text-emerald-600"
+                      />
+                      <span className="text-[12.5px] text-gray-700">Diploma</span>
+                    </label>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
                       <label className="block text-[12px] font-medium text-gray-700 mb-1">Institution</label>
-                      <input type="text" value={educationForm.twelfth.institution} onChange={(e) => setEducationForm({...educationForm, twelfth: {...educationForm.twelfth, institution: e.target.value}})} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
+                      <input type="text" value={educationForm.twelfthOrDiploma === 'diploma' ? educationForm.diploma.institution : educationForm.twelfth.institution} onChange={(e) => {
+                        if (educationForm.twelfthOrDiploma === 'diploma') {
+                          setEducationForm({...educationForm, diploma: {...educationForm.diploma, institution: e.target.value}});
+                        } else {
+                          setEducationForm({...educationForm, twelfth: {...educationForm.twelfth, institution: e.target.value}});
+                        }
+                      }} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
                     </div>
                     <div>
                       <label className="block text-[12px] font-medium text-gray-700 mb-1">Board</label>
-                      <input type="text" value={educationForm.twelfth.board} onChange={(e) => setEducationForm({...educationForm, twelfth: {...educationForm.twelfth, board: e.target.value}})} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
+                      <input type="text" value={educationForm.twelfthOrDiploma === 'diploma' ? educationForm.diploma.board : educationForm.twelfth.board} onChange={(e) => {
+                        if (educationForm.twelfthOrDiploma === 'diploma') {
+                          setEducationForm({...educationForm, diploma: {...educationForm.diploma, board: e.target.value}});
+                        } else {
+                          setEducationForm({...educationForm, twelfth: {...educationForm.twelfth, board: e.target.value}});
+                        }
+                      }} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
                     </div>
                     <div>
                       <label className="block text-[12px] font-medium text-gray-700 mb-1">Percentage (%)</label>
-                      <input type="number" step="0.01" value={educationForm.twelfth.percentage} onChange={(e) => setEducationForm({...educationForm, twelfth: {...educationForm.twelfth, percentage: parseFloat(e.target.value)}})} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
+                      <input type="number" step="0.01" value={educationForm.twelfthOrDiploma === 'diploma' ? educationForm.diploma.percentage : educationForm.twelfth.percentage} onChange={(e) => {
+                        if (educationForm.twelfthOrDiploma === 'diploma') {
+                          setEducationForm({...educationForm, diploma: {...educationForm.diploma, percentage: parseFloat(e.target.value)}});
+                        } else {
+                          setEducationForm({...educationForm, twelfth: {...educationForm.twelfth, percentage: parseFloat(e.target.value)}});
+                        }
+                      }} className="w-full border border-gray-300 rounded-md px-3 py-2 text-[13px]" />
                     </div>
                   </div>
                 </div>

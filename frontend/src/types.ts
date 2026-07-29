@@ -35,7 +35,15 @@ export interface Student {
       passingYear: number;
       marksheetUrl?: string;
     };
+    twelfthOrDiploma: 'twelfth' | 'diploma';
     twelfth: {
+      institution: string;
+      board: string;
+      percentage: number;
+      passingYear: number;
+      marksheetUrl?: string;
+    };
+    diploma: {
       institution: string;
       board: string;
       percentage: number;
@@ -44,7 +52,6 @@ export interface Student {
     };
     graduation: {
       university: string;
-      degree: string;
       branch: string;
       cgpa: number;
       sgpaPerSemester: number[];
@@ -73,6 +80,7 @@ export interface Student {
     role: string;
     duration: string;
     description: string;
+    certificateUrl?: string;
   }[];
   certificates: {
     id: string;

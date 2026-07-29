@@ -28,13 +28,13 @@ export const StudentsDirectory: React.FC = () => {
   const [remarksInput, setRemarksInput] = useState('');
 
   // RBAC guard: only placement coordinators and super admins should access this view
-  if (role !== 'placement_coordinator' && role !== 'super_admin') {
+  if (role !== 'placement_coordinator' && role !== 'placement_cell' && role !== 'super_admin') {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <ShieldCheck size={48} className="text-gray-300 mb-4" />
         <h3 className="text-[16px] font-semibold text-gray-700 mb-1">Access restricted</h3>
         <p className="text-[13px] text-gray-500 max-w-sm">
-          The Student Verification & Progress view is only accessible to placement coordinators and super admins.
+          The Student Verification & Progress view is only accessible to placement coordinators, placement cell, and super admins.
         </p>
       </div>
     );
@@ -233,7 +233,7 @@ export const StudentsDirectory: React.FC = () => {
                       >
                         <Eye size={12} /> Inspect
                       </button>
-                      {(role === 'placement_coordinator' || role === 'super_admin') && (
+{(role === 'placement_coordinator' || role === 'super_admin') && (
                         student.verificationStatus === 'verified' ? (
                           <span className="flex items-center gap-1 bg-green-50 border border-green-200 text-green-700 px-2 py-1 rounded-md text-[11.5px] font-medium">
                             <CheckCircle2 size={12} /> Verified
@@ -309,28 +309,122 @@ export const StudentsDirectory: React.FC = () => {
                 <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Academic Scores & CGPA:</h4>
                 <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-lg space-y-1.5 text-[12.5px] text-gray-700">
                   <div className="flex justify-between"><span>Graduation CGPA:</span> <strong className="text-gray-900">{inspectStudent.education.graduation.cgpa}</strong></div>
-                  <div className="flex justify-between"><span>12th Percentage:</span> <strong className="text-gray-900">{inspectStudent.education.twelfth.percentage}%</strong></div>
+                  <div className="flex justify-between"><span>{inspectStudent.education?.twelfthOrDiploma === 'diploma' ? 'Diploma' : '12th'} Percentage:</span> <strong className="text-gray-900">{(inspectStudent.education as any)[inspectStudent.education?.twelfthOrDiploma === 'diploma' ? 'diploma' : 'twelfth']?.percentage || 0}%</strong></div>
                   <div className="flex justify-between"><span>10th Percentage:</span> <strong className="text-gray-900">{inspectStudent.education.tenth.percentage}%</strong></div>
                   <div className="flex justify-between"><span>Active Backlogs:</span> <strong className="text-gray-900">{inspectStudent.education.graduation.backlogs.active}</strong></div>
+                </div>
+                {inspectStudent.education.graduation.sgpaPerSemester?.length > 0 && (
+                  <div className="mt-2">
+                    <span className="text-[11px] font-semibold text-gray-500 block mb-1.5">Semester SGPA:</span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {inspectStudent.education.graduation.sgpaPerSemester.map((sgpa, idx) => (
+                        <div key={idx} className="bg-white border border-gray-200 rounded p-1.5 text-center">
+                          <span className="text-[9px] text-gray-400 block">Sem {idx + 1}</span>
+                          <span className="text-[11px] font-semibold text-gray-900">{sgpa}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Profile Completeness */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Profile Completeness:</h4>
+                <div className="p-3 bg-white border border-gray-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-medium text-gray-600">Completion</span>
+                    <span className="text-[12px] font-bold text-emerald-700">{inspectStudent.profileCompletionPercentage || 0}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-2">
+                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${inspectStudent.profileCompletionPercentage || 0}%` }}></div>
+                  </div>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {(() => {
+                      const s = inspectStudent;
+                      const checklist: { label: string; done: boolean }[] = [
+                        { label: 'Full Name', done: !!s.name },
+                        { label: 'Email', done: !!s.email },
+                        { label: 'Phone Number', done: !!s.phone },
+                        { label: 'Avatar / Photo', done: !!s.avatarUrl },
+                        { label: 'Roll Number', done: !!s.rollNo },
+                        { label: 'Branch', done: !!s.branch },
+                        { label: 'Batch Year', done: !!s.batchYear },
+                        { label: 'Gender', done: !!s.gender },
+                        { label: 'Category', done: !!s.category },
+                        { label: '10th Institution', done: !!s.education?.tenth?.institution },
+                        { label: '10th Board', done: !!s.education?.tenth?.board },
+                        { label: '10th Percentage', done: Number(s.education?.tenth?.percentage || 0) > 0 },
+                        { label: `${s.education?.twelfthOrDiploma === 'diploma' ? 'Diploma' : '12th'} Institution`, done: !!(s.education as any)?.[s.education?.twelfthOrDiploma === 'diploma' ? 'diploma' : 'twelfth']?.institution },
+                        { label: `${s.education?.twelfthOrDiploma === 'diploma' ? 'Diploma' : '12th'} Board`, done: !!(s.education as any)?.[s.education?.twelfthOrDiploma === 'diploma' ? 'diploma' : 'twelfth']?.board },
+                        { label: `${s.education?.twelfthOrDiploma === 'diploma' ? 'Diploma' : '12th'} Percentage`, done: Number((s.education as any)?.[s.education?.twelfthOrDiploma === 'diploma' ? 'diploma' : 'twelfth']?.percentage || 0) > 0 },
+                        { label: 'University', done: !!s.education?.graduation?.university },
+                        { label: 'Branch / Major', done: !!s.education?.graduation?.branch },
+                        { label: 'CGPA', done: Number(s.education?.graduation?.cgpa || 0) > 0 },
+                        { label: 'Semester SGPA', done: Array.isArray(s.education?.graduation?.sgpaPerSemester) && s.education.graduation.sgpaPerSemester.length > 0 },
+                        { label: 'Skills', done: Array.isArray(s.skills) && s.skills.length > 0 },
+                        { label: 'Projects', done: Array.isArray(s.projects) && s.projects.length > 0 },
+                        { label: 'Internships', done: Array.isArray(s.internships) && s.internships.length > 0 },
+                        { label: 'Certificates', done: Array.isArray(s.certificates) && s.certificates.length > 0 },
+                        { label: 'Resume Uploaded', done: Array.isArray(s.resumes) && s.resumes.length > 0 },
+                        { label: '10th Marksheet', done: !!s.education?.tenth?.marksheetUrl },
+                        { label: `${s.education?.twelfthOrDiploma === 'diploma' ? 'Diploma' : '12th'} Marksheet`, done: !!(s.education as any)?.[s.education?.twelfthOrDiploma === 'diploma' ? 'diploma' : 'twelfth']?.marksheetUrl },
+                      ];
+                      const pending = checklist.filter(i => !i.done);
+                      const completed = checklist.filter(i => i.done);
+                      return (
+                        <>
+                          {pending.length > 0 && (
+                            <div className="mb-2">
+                              <span className="text-[10px] font-semibold text-red-500 uppercase tracking-wider block mb-1">Pending ({pending.length})</span>
+                              {pending.map((item, idx) => (
+                                <div key={`p-${idx}`} className="flex items-center gap-1.5 text-[10.5px] text-red-600 py-0.5">
+                                  <div className="w-2 h-2 rounded-full border-2 border-red-300 shrink-0"></div>
+                                  <span>{item.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {completed.length > 0 && (
+                            <div>
+                              <span className="text-[10px] font-semibold text-green-500 uppercase tracking-wider block mb-1">Completed ({completed.length})</span>
+                              {completed.map((item, idx) => (
+                                <div key={`c-${idx}`} className="flex items-center gap-1.5 text-[10.5px] text-gray-500 py-0.5">
+                                  <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                                  <span>{item.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
 
               <div>
                 <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Uploaded Documents:</h4>
                 <div className="space-y-2.5">
-                  {/* 12th Marksheet */}
-                  {inspectStudent.education?.twelfth?.marksheetUrl ? (
-                    <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-white shadow-sm">
-                      <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
-                        <FileText size={16} className="text-red-500" /> Class 12 Marksheet
-                      </span>
-                      <a href={inspectStudent.education.twelfth.marksheetUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
-                    </div>
-                  ) : (
-                    <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50 shadow-sm text-gray-400 text-[12.5px]">
-                      <span>No Class 12 Marksheet</span>
-                    </div>
-                  )}
+                  {/* 12th / Diploma Marksheet */}
+                  {(() => {
+                    const isDip = inspectStudent.education?.twelfthOrDiploma === 'diploma';
+                    const hKey = isDip ? 'diploma' : 'twelfth';
+                    const hLabel = isDip ? 'Diploma' : '12th';
+                    const hUrl = (inspectStudent.education as any)?.[hKey]?.marksheetUrl;
+                    return hUrl ? (
+                      <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-white shadow-sm">
+                        <span className="flex items-center gap-2 font-medium text-gray-700 text-[12.5px]">
+                          <FileText size={16} className="text-red-500" /> {hLabel} Marksheet
+                        </span>
+                        <a href={hUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium text-[11.5px] hover:underline">View PDF</a>
+                      </div>
+                    ) : (
+                      <div className="p-3 border border-gray-200 rounded-lg flex items-center justify-between bg-gray-50 shadow-sm text-gray-400 text-[12.5px]">
+                        <span>No {hLabel} Marksheet</span>
+                      </div>
+                    );
+                  })()}
 
                   {/* 10th Marksheet */}
                   {inspectStudent.education?.tenth?.marksheetUrl ? (
@@ -363,49 +457,51 @@ export const StudentsDirectory: React.FC = () => {
               </div>
 
               {/* Skills */}
-              {inspectStudent.skills?.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Skills:</h4>
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Skills:</h4>
+                {inspectStudent.skills?.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {inspectStudent.skills.map((skill, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-white border border-gray-200 text-gray-600 rounded text-[11px] font-medium">
-                        {skill}
-                      </span>
+                      <span key={idx} className="px-2 py-1 bg-white border border-gray-200 text-gray-600 rounded text-[11px] font-medium">{skill}</span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No skills added</div>
+                )}
+              </div>
 
               {/* Internships */}
-              {inspectStudent.internships?.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Internships:</h4>
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Internships & Work Experience:</h4>
+                {inspectStudent.internships?.length > 0 ? (
                   <div className="space-y-2">
                     {inspectStudent.internships.map((intern, idx) => (
                       <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg text-[12px]">
                         <div className="font-semibold text-gray-900">{intern.role} at {intern.company}</div>
                         <div className="text-gray-500 mb-1">{intern.duration}</div>
                         <p className="text-gray-600 mb-1">{intern.description}</p>
-                        {intern.certificateUrl && (
-                          <a href={intern.certificateUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline">View Certificate</a>
+                        {(intern as any).certificateUrl && (
+                          <a href={(intern as any).certificateUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline">View Certificate</a>
                         )}
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No internships added</div>
+                )}
+              </div>
 
               {/* Projects */}
-              {inspectStudent.projects?.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Projects:</h4>
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Projects:</h4>
+                {inspectStudent.projects?.length > 0 ? (
                   <div className="space-y-2">
                     {inspectStudent.projects.map((proj, idx) => (
                       <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg text-[12px]">
                         <div className="font-semibold text-gray-900">{proj.title}</div>
                         <p className="text-gray-600 mb-1">{proj.description}</p>
                         {proj.link && (
-                          <a href={proj.link} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline block mb-1">View Project</a>
+                          <a href={proj.link.startsWith('http') ? proj.link : `https://${proj.link}`} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline block mb-1">View Project</a>
                         )}
                         <div className="flex flex-wrap gap-1 mt-1">
                           {proj.techStack?.map((tech, i) => (
@@ -415,11 +511,33 @@ export const StudentsDirectory: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No projects added</div>
+                )}
+              </div>
+
+              {/* Certificates */}
+              <div>
+                <h4 className="font-semibold text-gray-800 text-[12.5px] mb-2">Certificates & Accomplishments:</h4>
+                {inspectStudent.certificates?.length > 0 ? (
+                  <div className="space-y-2">
+                    {inspectStudent.certificates.map((cert, idx) => (
+                      <div key={idx} className="p-3 bg-white border border-gray-200 rounded-lg text-[12px]">
+                        <div className="font-semibold text-gray-900">{cert.title}</div>
+                        <div className="text-gray-500 mb-1">Issued by: {cert.issuer} | {cert.issueDate}</div>
+                        {cert.credentialUrl && (
+                          <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium hover:underline">View Credential</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[11.5px] text-gray-400 italic">No certificates added</div>
+                )}
+              </div>
             </div>
 
-            {(role === 'placement_coordinator' || role === 'super_admin') && (
+{(role === 'placement_coordinator' || role === 'super_admin') && (
               <div className="p-4 border-t border-gray-200 bg-gray-50 flex flex-col gap-2">
                 {inspectStudent.verificationStatus === 'verified' ? (
                   <>

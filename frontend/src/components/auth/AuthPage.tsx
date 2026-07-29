@@ -84,15 +84,15 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* ---------------------------------------------------------- */}
       {/* Left brand panel — hidden on small screens                  */}
       {/* ---------------------------------------------------------- */}
-      <div className="hidden lg:flex lg:w-[46%] relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950">
-        <div className="absolute -top-40 -left-32 w-[26rem] h-[26rem] rounded-full bg-emerald-600/20 blur-[100px]" />
-        <div className="absolute bottom-0 -right-20 w-[24rem] h-[24rem] rounded-full bg-emerald-500/10 blur-[110px]" />
+      <div className="hidden lg:flex lg:w-[46%] relative overflow-hidden bg-gradient-to-br from-emerald-700 via-emerald-600 to-emerald-500">
+        <div className="absolute -top-40 -left-32 w-[26rem] h-[26rem] rounded-full bg-emerald-400/20 blur-[100px]" />
+        <div className="absolute bottom-0 -right-20 w-[24rem] h-[24rem] rounded-full bg-emerald-300/15 blur-[110px]" />
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage:
               'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
@@ -106,7 +106,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3"
           >
-            <div className="bg-emerald-600 p-2.5 rounded-xl shadow-lg shadow-emerald-900/50">
+            <div className="bg-white/20 p-2.5 rounded-xl shadow-lg shadow-emerald-900/30">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <span className="text-white font-bold text-lg tracking-tight">SUPRESET</span>
@@ -129,7 +129,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="mt-4 text-slate-400 max-w-sm leading-relaxed"
+              className="mt-4 text-emerald-50/80 max-w-sm leading-relaxed"
             >
               Students, coordinators, TPOs and recruiters — every role gets its own
               dashboard, connected in real time.
@@ -144,10 +144,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   transition={{ delay: 0.3 + i * 0.1 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-emerald-400">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 border border-white/20 text-emerald-200">
                     <h.icon className="w-4.5 h-4.5" />
                   </div>
-                  <span className="text-sm text-slate-300">{h.text}</span>
+                  <span className="text-sm text-emerald-50/90">{h.text}</span>
                 </motion.div>
               ))}
             </div>
@@ -157,7 +157,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="text-xs text-slate-500"
+            className="text-xs text-emerald-50/60"
           >
             © {new Date().getFullYear()} SUPRESET Placement Platform
           </motion.p>
@@ -168,7 +168,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
       {/* Right form panel                                             */}
       {/* ---------------------------------------------------------- */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-10 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[28rem] h-[28rem] rounded-full bg-emerald-900/10 blur-[120px] lg:hidden pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[28rem] h-[28rem] rounded-full bg-emerald-100/60 blur-[120px] lg:hidden pointer-events-none" />
 
         <div className="mx-auto w-full max-w-md relative z-10">
           {/* Mobile-only logo */}
@@ -177,7 +177,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-center lg:hidden"
           >
-            <div className="bg-emerald-600 p-3 rounded-2xl shadow-lg shadow-emerald-900/50">
+            <div className="bg-emerald-600 p-3 rounded-2xl shadow-lg shadow-emerald-200/50">
               <GraduationCap className="w-9 h-9 text-white" />
             </div>
           </motion.div>
@@ -186,7 +186,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="mt-6 lg:mt-0 text-center lg:text-left text-2xl sm:text-3xl font-bold text-white tracking-tight"
+            className="mt-6 lg:mt-0 text-center lg:text-left text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight"
           >
             {isLogin ? 'Welcome back' : 'Create your account'}
           </motion.h2>
@@ -194,7 +194,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="mt-2 text-center lg:text-left text-sm text-slate-400"
+            className="mt-2 text-center lg:text-left text-sm text-gray-500"
           >
             {isLogin
               ? 'Sign in to access your placement dashboard'
@@ -207,11 +207,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
             transition={{ delay: 0.2 }}
             className="mt-8"
           >
-            <div className="bg-slate-900/70 backdrop-blur-xl rounded-2xl border border-slate-800 shadow-2xl shadow-black/40 p-6 sm:p-8">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/50 p-6 sm:p-8">
               {/* Toggle Login/Register */}
-              <div className="relative flex bg-slate-950/60 p-1 rounded-xl mb-7 border border-slate-800">
+              <div className="relative flex bg-gray-100 p-1 rounded-xl mb-7 border border-gray-200">
                 <motion.div
-                  className="absolute inset-y-1 w-[calc(50%-4px)] rounded-lg bg-emerald-600 shadow-md shadow-emerald-900/40"
+                  className="absolute inset-y-1 w-[calc(50%-4px)] rounded-lg bg-emerald-600 shadow-md shadow-emerald-200/40"
                   animate={{ left: isLogin ? 4 : 'calc(50% + 0px)' }}
                   transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                 />
@@ -219,7 +219,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   type="button"
                   onClick={() => setIsLogin(true)}
                   className={`relative z-10 flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                    isLogin ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                    isLogin ? 'text-white' : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   Sign In
@@ -228,7 +228,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   type="button"
                   onClick={() => setIsLogin(false)}
                   className={`relative z-10 flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                    !isLogin ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                    !isLogin ? 'text-white' : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   Register
@@ -347,14 +347,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
 
                 {isLogin && (
                   <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2 text-slate-400 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 text-gray-600 cursor-pointer select-none">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-slate-900"
+                        className="h-4 w-4 rounded border-gray-300 bg-white text-emerald-600 focus:ring-emerald-500"
                       />
                       Remember me
                     </label>
-                    <a href="#" className="font-medium text-emerald-500 hover:text-emerald-400 transition-colors">
+                    <a href="#" className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors">
                       Forgot password?
                     </a>
                   </div>
@@ -363,7 +363,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-900/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.99]"
+                  className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-200/50 transition-all disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.99]"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -379,12 +379,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
               </form>
             </div>
 
-            <p className="mt-6 text-center text-sm text-slate-500">
+            <p className="mt-6 text-center text-sm text-gray-500">
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="font-semibold text-emerald-500 hover:text-emerald-400 transition-colors"
+                className="font-semibold text-emerald-600 hover:text-emerald-500 transition-colors"
               >
                 {isLogin ? 'Register' : 'Sign in'}
               </button>
@@ -401,7 +401,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
 /* ------------------------------------------------------------------ */
 
 const inputClass =
-  'block w-full pl-10 pr-3 bg-slate-950 border border-slate-800 rounded-lg py-2.5 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors';
+  'block w-full pl-10 pr-3 bg-white border border-gray-300 rounded-lg py-2.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors';
 
 function Field({
   label,
@@ -414,10 +414,10 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <IconComp className="h-5 w-5 text-slate-500" />
+          <IconComp className="h-5 w-5 text-gray-400" />
         </div>
         {children}
       </div>

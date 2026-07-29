@@ -46,7 +46,15 @@ const studentSchema = new mongoose.Schema(
         passingYear: { type: Number, default: 0 },
         marksheetUrl: { type: String, default: '' },
       },
+      twelfthOrDiploma: { type: String, enum: ['twelfth', 'diploma'], default: 'twelfth' },
       twelfth: {
+        institution: { type: String, default: '' },
+        board: { type: String, default: '' },
+        percentage: { type: Number, default: 0 },
+        passingYear: { type: Number, default: 0 },
+        marksheetUrl: { type: String, default: '' },
+      },
+      diploma: {
         institution: { type: String, default: '' },
         board: { type: String, default: '' },
         percentage: { type: Number, default: 0 },
@@ -55,7 +63,6 @@ const studentSchema = new mongoose.Schema(
       },
       graduation: {
         university: { type: String, default: '' },
-        degree: { type: String, default: '' },
         branch: { type: String, default: '' },
         cgpa: { type: Number, default: 0 },
         sgpaPerSemester: { type: [Number], default: [] },

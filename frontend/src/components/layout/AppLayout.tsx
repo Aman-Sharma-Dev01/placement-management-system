@@ -50,7 +50,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // Define which tabs are allowed per role
   const studentAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'applications'];
   const coordinatorAllowedTabs = ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics'];
-  const cellAllowedTabs = ['dashboard', 'jobs', 'drives', 'applications', 'companies', 'analytics', 'drive_create'];
+  const cellAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create'];
   const adminAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create'];
 
   const allowedTabs =
@@ -72,8 +72,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const allMenuItems = [
     { key: 'dashboard', icon: <LayoutDashboard size={16} />, label: 'Home Dashboard', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'jobs', icon: <Briefcase size={16} />, label: 'Job Profiles', roles: ['student', 'placement_cell', 'super_admin'] },
-    { key: 'student_profile', icon: <User size={16} />, label: 'My Profile', roles: ['student'] },
-    { key: 'students_directory', icon: <ShieldCheck size={16} />, label: 'Student Verification & Progress', roles: ['placement_coordinator', 'super_admin'] },
+    { key: 'student_profile', icon: <User size={16} />, label: 'My Profile', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
+    { key: 'students_directory', icon: <ShieldCheck size={16} />, label: 'Student Verification & Progress', roles: ['placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'drives', icon: <Calendar size={16} />, label: 'Placement Drives', roles: ['placement_cell', 'super_admin'] },
     { key: 'applications', icon: <FileText size={16} />, label: role === 'student' ? 'My Applications' : 'Applications & Stages', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'companies', icon: <Building size={16} />, label: 'Company & Partner Management', roles: ['placement_cell', 'super_admin'] },

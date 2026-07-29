@@ -131,7 +131,7 @@ export const JobProfileView: React.FC = () => {
     }
   };
 
-  const exportData = (type: 'all' | 'shortlisted') => {
+const exportData = (type: 'all' | 'shortlisted') => {
     if (!selectedDrive) return;
     const driveApps = applications.filter(a => a.driveId === selectedDrive.id);
     let filteredApps = driveApps;
@@ -144,14 +144,16 @@ export const JobProfileView: React.FC = () => {
       return;
     }
 
-    const headers = ['Name', 'Email', 'Phone', 'Roll No', 'Branch', 'Status'];
+    const headers = ['Name', 'Email', 'Phone', 'Roll No', 'Branch', 'Status', 'Resume Link'];
     const rows = filteredApps.map(app => {
       const student = students.find(s => s.id === app.studentId);
       if (!student) return null;
-      return [student.name, student.email, student.phone, student.rollNo, student.branch, app.status];
+      const primaryResume = student.resumes?.find(r => r.isPrimary);
+      const resumeUrl = primaryResume?.fileUrl || (student.resumes?.[0]?.fileUrl || '');
+      return [student.name, student.email, student.phone, student.rollNo, student.branch, app.status, resumeUrl];
     }).filter(r => r !== null);
 
-    const csvContent = [headers.join(','), ...rows.map(e => e!.join(','))].join('\\n');
+    const csvContent = [headers.join(','), ...rows.map(e => e!.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);

@@ -20,7 +20,7 @@ const MainContent: React.FC = () => {
   const allowedTabsByRole: Record<string, string[]> = {
     student: ['dashboard', 'jobs', 'student_profile', 'applications'],
     placement_coordinator: ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics'],
-    placement_cell: ['dashboard', 'jobs', 'drives', 'applications', 'companies', 'analytics', 'drive_create'],
+    placement_cell: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create'],
     super_admin: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create'],
   };
 

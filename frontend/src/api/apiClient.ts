@@ -1,4 +1,5 @@
-const API_BASE = 'https://placement-management-system-8w5t.onrender.com/api';
+// const API_BASE = 'https://placement-management-system-8w5t.onrender.com/api';
+const API_BASE = '/api';
 
 interface RequestOptions {
   method?: string;
