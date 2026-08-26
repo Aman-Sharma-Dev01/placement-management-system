@@ -8,10 +8,15 @@ import {
   CheckCircle2,
   Plus,
   Trash2,
-  Info
+  Info,
+  Upload,
+  File,
+  X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { PlacementDrive, HiringStage } from '../../types';
+import { PlacementDrive, HiringStage, CompanyDocument } from '../../types';
+import { uploadApi } from '../../api/upload.api';
+import { toast } from '../../utils/toast';
 
 export const DriveCreationWizard: React.FC = () => {
   const { createPlacementDrive, setActiveTab, role } = useApp();
@@ -98,6 +103,10 @@ export const DriveCreationWizard: React.FC = () => {
 
   const [thirdPartyLinks, setThirdPartyLinks] = useState<{ label: string; url: string }[]>([]);
 
+  const [companyDocuments, setCompanyDocuments] = useState<CompanyDocument[]>([]);
+  const [docUploadInputRef, setDocUploadInputRef] = useState<HTMLInputElement | null>(null);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+
   const addThirdPartyLink = () => {
     setThirdPartyLinks([...thirdPartyLinks, { label: '', url: '' }]);
   };
@@ -110,6 +119,37 @@ export const DriveCreationWizard: React.FC = () => {
     const newLinks = [...thirdPartyLinks];
     newLinks[index] = { ...newLinks[index], [field]: value };
     setThirdPartyLinks(newLinks);
+  };
+
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingDoc(true);
+      const res = await uploadApi.companyDocument(file);
+      
+      const newDoc: CompanyDocument = {
+        id: `doc-${Date.now()}`,
+        name: file.name,
+        description: '',
+        fileUrl: res.url,
+        uploadedAt: new Date().toLocaleDateString('en-GB'),
+      };
+
+      setCompanyDocuments(prev => [...prev, newDoc]);
+      toast.success('Document uploaded successfully');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.response?.data?.message || 'Failed to upload document');
+    } finally {
+      setIsUploadingDoc(false);
+      if (docUploadInputRef) docUploadInputRef.value = '';
+    }
+  };
+
+  const removeCompanyDocument = (docId: string) => {
+    setCompanyDocuments(prev => prev.filter(d => d.id !== docId));
   };
 
   const addStage = () => {
@@ -169,6 +209,7 @@ export const DriveCreationWizard: React.FC = () => {
         requiredDocuments: requiredDocuments,
         externalApplyUrl: formValues.externalApplyUrl,
         thirdPartyLinks: thirdPartyLinks.filter(link => link.label.trim() || link.url.trim()),
+        companyDocuments: companyDocuments,
         totalEligibleStudentsCount: 350,
       };
 
@@ -663,7 +704,7 @@ export const DriveCreationWizard: React.FC = () => {
             </h3>
 
             <div>
-              <label className="block text-[12.5px] font-medium text-gray-700 mb-3">Select Mandatory Uploads</label>
+              <label className="block text-[12.5px] font-medium text-gray-700 mb-3">Select Mandatory Uploads for Students</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 border border-gray-200 rounded-md">
                 {[
                   'Updated Resume (PDF format)',
@@ -683,6 +724,68 @@ export const DriveCreationWizard: React.FC = () => {
                   </label>
                 ))}
               </div>
+            </div>
+
+            {/* Company Documents (Optional) - Documents received from company for students */}
+            <div className="pt-4 border-t border-gray-200">
+              <h4 className="m-0 text-[12px] font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <File size={16} className="text-emerald-600" />
+                Company Documents (Optional)
+              </h4>
+              <p className="text-[12px] text-gray-500 mb-4">Upload documents received from the company (JD, offer letter format, company brochure, etc.) that students can view when applying.</p>
+              
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-emerald-400 transition-colors">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  ref={setDocUploadInputRef}
+                  onChange={handleDocUpload}
+                  className="hidden"
+                  id="company-doc-upload"
+                  disabled={isUploadingDoc}
+                />
+                <label htmlFor="company-doc-upload" className="cursor-pointer flex flex-col items-center justify-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center">
+                    {isUploadingDoc ? (
+                      <Upload size={28} className="text-emerald-600 animate-spin" />
+                    ) : (
+                      <Upload size={28} className="text-emerald-600" />
+                    )}
+                  </div>
+                  <div className="text-center">
+                    <span className="text-[13px] font-medium text-gray-700 block">
+                      {isUploadingDoc ? 'Uploading...' : 'Click to upload company document'}
+                    </span>
+                    <span className="text-[11px] text-gray-400">PDF, DOC, DOCX, PNG, JPG (Max 10MB)</span>
+                  </div>
+                </label>
+              </div>
+
+              {companyDocuments.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Uploaded Documents</span>
+                  {companyDocuments.map((doc) => (
+                    <div key={doc.id} className="p-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded bg-emerald-50 flex items-center justify-center">
+                          <FileText size={18} className="text-emerald-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 text-[13px]">{doc.name}</div>
+                          <div className="text-[11px] text-gray-500">Uploaded {doc.uploadedAt}</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeCompanyDocument(doc.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                        title="Remove document"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

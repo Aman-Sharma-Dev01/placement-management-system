@@ -89,6 +89,14 @@ const placementDriveSchema = new mongoose.Schema(
       },
     ],
     importantNotice: { type: String, default: '' },
+    companyDocuments: [
+      {
+        name: { type: String, required: true },
+        description: { type: String, default: '' },
+        fileUrl: { type: String, required: true },
+        uploadedAt: { type: String, default: '' },
+      },
+    ],
 
     totalEligibleStudentsCount: { type: Number, default: 0 },
     totalAppliedCount: { type: Number, default: 0 },

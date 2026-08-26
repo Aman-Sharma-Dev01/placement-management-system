@@ -213,6 +213,177 @@ export const ApplicationsTracker: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // Export helpers for placement coordinators and cell
+  const getEligibleStudents = (driveId: string) => {
+    const drive = drives.find(d => d.id === driveId);
+    if (!drive) return [];
+    
+    return students.filter(student => {
+      // Check branch eligibility
+      const branchMatched = drive.eligibility.allowedBranches.some((b) =>
+        b.toLowerCase().includes((student.branch || '').toLowerCase()) || (student.branch || '').toLowerCase().includes(b.toLowerCase())
+      );
+      if (!branchMatched) return false;
+      
+      // Check CGPA
+      const cgpa = student.education?.graduation?.cgpa || 0;
+      if (cgpa < drive.eligibility.minCgpa) return false;
+      
+      // Check backlogs
+      const activeBacklogs = student.education?.graduation?.backlogs?.active || 0;
+      if (activeBacklogs > drive.eligibility.maxActiveBacklogs) return false;
+      
+      // Check verification status
+      if (student.verificationStatus !== 'verified') return false;
+      
+      return true;
+    });
+  };
+
+  const handleExportEligibleStudents = (driveId: string) => {
+    const drive = drives.find(d => d.id === driveId);
+    if (!drive) return;
+    
+    const eligibleStudents = getEligibleStudents(driveId);
+    
+    if (eligibleStudents.length === 0) {
+      toast.info('No eligible students found for this drive.');
+      return;
+    }
+
+    const headers = ['Name', 'Email', 'Phone', 'Roll No', 'Branch', 'CGPA', '10th %', '12th %', 'Active Backlogs', 'Verification Status', 'Profile Completion %', 'Resume Link'];
+    const rows = eligibleStudents.map(student => {
+      const primaryResume = student.resumes?.find(r => r.isPrimary);
+      const resumeUrl = primaryResume?.fileUrl || (student.resumes?.[0]?.fileUrl || '');
+      const isDiploma = student.education?.twelfthOrDiploma === 'diploma';
+      const hsKey = isDiploma ? 'diploma' : 'twelfth';
+      const hsPercentage = (student.education as any)?.[hsKey]?.percentage || 0;
+      
+      return [
+        `"${student.name}"`, 
+        `"${student.email || ''}"`, 
+        `"${student.phone || ''}"`, 
+        `"${student.rollNo}"`, 
+        `"${student.branch || ''}"`, 
+        student.education?.graduation?.cgpa || 0,
+        student.education?.tenth?.percentage || 0,
+        hsPercentage,
+        student.education?.graduation?.backlogs?.active || 0,
+        student.verificationStatus,
+        student.profileCompletionPercentage || 0,
+        `"${resumeUrl}"`
+      ];
+    });
+
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${drive.companyName}_${drive.jobTitle}_eligible_students.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportAppliedStudents = (driveId: string) => {
+    const drive = drives.find(d => d.id === driveId);
+    if (!drive) return;
+    
+    const driveApps = applications.filter(a => a.driveId === driveId);
+    
+    if (driveApps.length === 0) {
+      toast.info('No students have applied for this drive.');
+      return;
+    }
+
+    const headers = ['Name', 'Email', 'Phone', 'Roll No', 'Branch', 'CGPA', 'Status', 'Applied On', 'Current Stage', 'Resume Link'];
+    const rows = driveApps.map(app => {
+      const student = students.find(s => s.id === app.studentId);
+      if (!student) return null;
+      
+      const primaryResume = student.resumes?.find(r => r.isPrimary);
+      const resumeUrl = primaryResume?.fileUrl || (student.resumes?.[0]?.fileUrl || '');
+      const driveStages = drive.stages;
+      const currentStage = driveStages.find(s => s.id === app.currentStageId);
+      
+      return [
+        `"${student.name}"`, 
+        `"${student.email || ''}"`, 
+        `"${student.phone || ''}"`, 
+        `"${student.rollNo}"`, 
+        `"${student.branch || ''}"`, 
+        student.education?.graduation?.cgpa || 0,
+        app.status, 
+        `"${app.appliedAt}"`,
+        `"${currentStage?.name || 'Application Received'}"`,
+        `"${resumeUrl}"`
+      ];
+    }).filter(r => r !== null);
+
+    const csvContent = [headers.join(','), ...rows.map(e => e!.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${drive.companyName}_${drive.jobTitle}_applied_students.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportEligibleNotApplied = (driveId: string) => {
+    const drive = drives.find(d => d.id === driveId);
+    if (!drive) return;
+    
+    const eligibleStudents = getEligibleStudents(driveId);
+    const appliedStudentIds = new Set(applications.filter(a => a.driveId === driveId).map(a => a.studentId));
+    
+    const notApplied = eligibleStudents.filter(s => !appliedStudentIds.has(s.id));
+    
+    if (notApplied.length === 0) {
+      toast.info('All eligible students have applied for this drive.');
+      return;
+    }
+
+    const headers = ['Name', 'Email', 'Phone', 'Roll No', 'Branch', 'CGPA', '10th %', '12th %', 'Active Backlogs', 'Verification Status', 'Profile Completion %', 'Resume Link'];
+    const rows = notApplied.map(student => {
+      const primaryResume = student.resumes?.find(r => r.isPrimary);
+      const resumeUrl = primaryResume?.fileUrl || (student.resumes?.[0]?.fileUrl || '');
+      const isDiploma = student.education?.twelfthOrDiploma === 'diploma';
+      const hsKey = isDiploma ? 'diploma' : 'twelfth';
+      const hsPercentage = (student.education as any)?.[hsKey]?.percentage || 0;
+      
+      return [
+        `"${student.name}"`, 
+        `"${student.email || ''}"`, 
+        `"${student.phone || ''}"`, 
+        `"${student.rollNo}"`, 
+        `"${student.branch || ''}"`, 
+        student.education?.graduation?.cgpa || 0,
+        student.education?.tenth?.percentage || 0,
+        hsPercentage,
+        student.education?.graduation?.backlogs?.active || 0,
+        student.verificationStatus,
+        student.profileCompletionPercentage || 0,
+        `"${resumeUrl}"`
+      ];
+    });
+
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${drive.companyName}_${drive.jobTitle}_eligible_not_applied.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-4 text-[13px] text-gray-900">
       {/* Filters Bar */}
@@ -299,12 +470,44 @@ export const ApplicationsTracker: React.FC = () => {
             <span className="text-[12.5px] font-semibold text-gray-500 whitespace-nowrap">
               Total Applications: {filteredApplications.length}
             </span>
-            {isAdmin && (
+            {isAdmin && selectedDriveId !== 'all' && (
+              <div className="relative group">
+                <button
+                  className="flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors"
+                >
+                  <Download size={14} /> Export CSV
+                </button>
+                <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                  <button
+                    onClick={() => handleExportEligibleStudents(selectedDriveId)}
+                    className="w-full text-left px-4 py-2.5 text-[12px] text-gray-700 hover:bg-gray-50 border-b border-gray-100 flex items-center gap-2"
+                  >
+                    <CheckCircle2 size={14} className="text-green-600" />
+                    <span>Eligible Students ({getEligibleStudents(selectedDriveId).length})</span>
+                  </button>
+                  <button
+                    onClick={() => handleExportAppliedStudents(selectedDriveId)}
+                    className="w-full text-left px-4 py-2.5 text-[12px] text-gray-700 hover:bg-gray-50 border-b border-gray-100 flex items-center gap-2"
+                  >
+                    <FileText size={14} className="text-blue-600" />
+                    <span>Applied Students ({applications.filter(a => a.driveId === selectedDriveId).length})</span>
+                  </button>
+                  <button
+                    onClick={() => handleExportEligibleNotApplied(selectedDriveId)}
+                    className="w-full text-left px-4 py-2.5 text-[12px] text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <XCircle size={14} className="text-amber-600" />
+                    <span>Eligible but Not Applied ({getEligibleStudents(selectedDriveId).filter(s => !applications.some(a => a.driveId === selectedDriveId && a.studentId === s.id)).length})</span>
+                  </button>
+                </div>
+              </div>
+            )}
+            {isAdmin && selectedDriveId === 'all' && (
               <button
                 onClick={handleExport}
                 className="flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors"
               >
-                <Download size={14} /> Export CSV (with Resumes)
+                <Download size={14} /> Export Filtered Applications
               </button>
             )}
           </div>

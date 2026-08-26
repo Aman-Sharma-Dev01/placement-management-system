@@ -143,6 +143,14 @@ export interface EligibilityRules {
   offerCategoryRestriction?: string;
 }
 
+export interface CompanyDocument {
+  id: string;
+  name: string;
+  description?: string;
+  fileUrl: string;
+  uploadedAt: string;
+}
+
 export interface PlacementDrive {
   id: string;
   companyId: string;
@@ -169,6 +177,7 @@ export interface PlacementDrive {
   eligibility: EligibilityRules;
   stages: HiringStage[];
   requiredDocuments: string[];
+  companyDocuments?: CompanyDocument[];
   externalApplyUrl?: string;
   thirdPartyLinks?: { label: string; url: string }[];
   importantNotice?: string;

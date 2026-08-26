@@ -8,7 +8,7 @@ const createStorage = (folder) => {
     cloudinary: cloudinary,
     params: {
       folder: `placement-mgmt/${folder}`,
-      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'webp'],
+      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'webp', 'doc', 'docx'],
       resource_type: 'auto',
     },
   });
@@ -18,5 +18,6 @@ const uploadResume = multer({ storage: createStorage('resumes') });
 const uploadMarksheet = multer({ storage: createStorage('marksheets') });
 const uploadAvatar = multer({ storage: createStorage('avatars') });
 const uploadLogo = multer({ storage: createStorage('logos') });
+const uploadCompanyDoc = multer({ storage: createStorage('company-documents') });
 
-module.exports = { uploadResume, uploadMarksheet, uploadAvatar, uploadLogo };
+module.exports = { uploadResume, uploadMarksheet, uploadAvatar, uploadLogo, uploadCompanyDoc };

@@ -808,21 +808,57 @@ const exportData = (type: 'all' | 'shortlisted') => {
 
                   {/* Tab 4: Required Documents */}
                   {selectedDetailTab === 'documents' && (
-                    <div className="space-y-4">
-                      <h5 className="text-[11.5px] font-semibold uppercase text-gray-400 tracking-wider mb-1">Mandatory Documents Required for Application</h5>
-                      <div className="space-y-2.5">
-                        {selectedDrive.requiredDocuments.map((doc, idx) => (
-                          <div key={idx} className="p-3.5 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
-                            <span className="font-medium text-gray-700 flex items-center gap-2 text-[13px]">
-                              <FileText size={16} className="text-emerald-500" />
-                              {doc}
-                            </span>
-                            <span className="px-2 py-0.5 rounded text-[10.5px] font-medium bg-green-100 text-green-700 border border-green-200">
-                              Verified in Profile
-                            </span>
-                          </div>
-                        ))}
+                    <div className="space-y-6">
+                      <div>
+                        <h5 className="text-[11.5px] font-semibold uppercase text-gray-400 tracking-wider mb-3">Mandatory Documents Required for Application</h5>
+                        <div className="space-y-2.5">
+                          {selectedDrive.requiredDocuments.map((doc, idx) => (
+                            <div key={idx} className="p-3.5 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
+                              <span className="font-medium text-gray-700 flex items-center gap-2 text-[13px]">
+                                <FileText size={16} className="text-emerald-500" />
+                                {doc}
+                              </span>
+                              <span className="px-2 py-0.5 rounded text-[10.5px] font-medium bg-green-100 text-green-700 border border-green-200">
+                                Verified in Profile
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
+
+                      {selectedDrive.companyDocuments && selectedDrive.companyDocuments.length > 0 && (
+                        <div className="pt-4 border-t border-gray-200">
+                          <h5 className="text-[11.5px] font-semibold uppercase text-gray-400 tracking-wider mb-3 flex items-center gap-2">
+                            <Briefcase size={16} className="text-blue-600" />
+                            Company Documents
+                          </h5>
+                          <p className="text-[12px] text-gray-500 mb-4">Documents provided by <strong>{selectedDrive.companyName}</strong> for your reference.</p>
+                          <div className="space-y-2.5">
+                            {selectedDrive.companyDocuments.map((doc) => (
+                              <div key={doc.id} className="p-3.5 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-between">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className="w-10 h-10 rounded bg-blue-100 flex items-center justify-center shrink-0">
+                                    <FileText size={18} className="text-blue-600" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="font-medium text-gray-900 text-[13px] truncate">{doc.name}</div>
+                                    <div className="text-[11px] text-gray-500 mt-0.5">Uploaded {doc.uploadedAt}</div>
+                                  </div>
+                                </div>
+                                <a
+                                  href={doc.fileUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center gap-1.5 bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors shrink-0"
+                                >
+                                  <Download size={14} />
+                                  View / Download
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
