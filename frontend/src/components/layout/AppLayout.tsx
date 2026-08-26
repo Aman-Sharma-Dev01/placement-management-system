@@ -48,10 +48,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   };
 
   // Define which tabs are allowed per role
-  const studentAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'applications'];
-  const coordinatorAllowedTabs = ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics'];
-  const cellAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create'];
-  const adminAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create'];
+  const studentAllowedTabs = ['dashboard', 'student_dashboard', 'jobs', 'student_profile', 'applications', 'blogs'];
+  const coordinatorAllowedTabs = ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics', 'blogs'];
+  const cellAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create', 'blogs'];
+  const adminAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create', 'blogs'];
 
   const allowedTabs =
     role === 'student'
@@ -70,7 +70,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [role, activeTab]);
 
   const allMenuItems = [
-    { key: 'dashboard', icon: <LayoutDashboard size={16} />, label: 'Home Dashboard', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
+    { key: 'dashboard', icon: <LayoutDashboard size={16} />, label: role === 'student' ? 'Home' : 'Home Dashboard', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
+    { key: 'student_dashboard', icon: <BarChart2 size={16} />, label: 'My Dashboard', roles: ['student'] },
     { key: 'jobs', icon: <Briefcase size={16} />, label: 'Job Profiles', roles: ['student', 'placement_cell', 'super_admin'] },
     { key: 'student_profile', icon: <User size={16} />, label: 'My Profile', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'students_directory', icon: <ShieldCheck size={16} />, label: 'Student Verification & Progress', roles: ['placement_coordinator', 'placement_cell', 'super_admin'] },
@@ -78,13 +79,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { key: 'applications', icon: <FileText size={16} />, label: role === 'student' ? 'My Applications' : 'Applications & Stages', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'companies', icon: <Building size={16} />, label: 'Company & Partner Management', roles: ['placement_cell', 'super_admin'] },
     { key: 'analytics', icon: <BarChart2 size={16} />, label: 'Placement Analytics', roles: ['placement_coordinator', 'placement_cell', 'super_admin'] },
+    { key: 'blogs', icon: <Bell size={16} />, label: 'Announcements & Blogs', roles: ['placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'settings', icon: <Settings size={16} />, label: 'System Settings', roles: ['super_admin'] },
   ];
 
   const menuItems = allMenuItems.filter((item) => item.roles.includes(role));
 
   const breadcrumbNameMap: Record<string, string> = {
-    dashboard: 'Dashboard',
+    dashboard: 'Home',
+    student_dashboard: 'My Dashboard',
     jobs: 'Job Profiles',
     student_profile: 'Student Profile',
     students_directory: 'Student Registry',
@@ -92,6 +95,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     applications: 'Applications Tracker',
     companies: 'Companies & Partners',
     analytics: 'Analytics & Reports',
+    blogs: 'Announcements & Blogs',
     settings: 'Settings',
     drive_create: 'Create Placement Drive',
   };

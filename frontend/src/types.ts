@@ -6,6 +6,20 @@ export type JobStatus = 'open' | 'closed' | 'upcoming' | 'draft';
 
 export type ApplicationStatus = 'applied' | 'under_review' | 'shortlisted' | 'offered' | 'rejected' | 'withdrawn';
 
+export interface Blog {
+  id: string;
+  _id?: string;
+  title: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  relatedDriveId?: string;
+  targetAudience: 'all' | 'students';
+  isImportant: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Student {
   id: string;
   _id?: string;

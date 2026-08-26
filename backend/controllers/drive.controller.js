@@ -1,6 +1,7 @@
 const PlacementDrive = require('../models/PlacementDrive');
 const Company = require('../models/Company');
 const Notification = require('../models/Notification');
+const Blog = require('../models/Blog');
 
 // @desc    Get all placement drives (with filtering)
 // @route   GET /api/drives
@@ -105,6 +106,17 @@ const createDrive = async (req, res) => {
       message: `${drive.companyName} has opened applications for ${drive.jobTitle} with CTC ${drive.ctcLpa} LPA.`,
       type: 'drive',
       linkDriveId: drive._id.toString(),
+    });
+
+    // Create a blog/announcement for this drive
+    await Blog.create({
+      title: `New Placement Drive: ${drive.companyName} (${drive.jobTitle})`,
+      content: `${drive.companyName} is visiting for the ${drive.jobTitle} role.\nCTC Offered: ${drive.ctcLpa} LPA\nDeadline to apply: ${drive.deadlineDate || 'TBA'}\nCheck the job profile for more details and apply before the deadline.`,
+      authorId: req.user.id,
+      authorName: req.user.name || 'Placement Cell',
+      relatedDriveId: drive._id,
+      targetAudience: 'students',
+      isImportant: true,
     });
 
     res.status(201).json(drive);

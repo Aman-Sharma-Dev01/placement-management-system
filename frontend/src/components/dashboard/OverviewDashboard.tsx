@@ -3,6 +3,8 @@ import {
   Calendar,
   ArrowRight,
   ShieldCheck,
+  Bell,
+  Clock,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -18,7 +20,7 @@ const statusClasses: Record<string, string> = {
 };
 
 export const OverviewDashboard: React.FC = () => {
-  const { students, drives, applications, role, setActiveTab, activeStudent } = useApp();
+  const { students, drives, applications, blogs, role, setActiveTab, activeStudent } = useApp();
 
   if (role === 'student') {
     if (!activeStudent || (!activeStudent.id && !activeStudent._id)) {

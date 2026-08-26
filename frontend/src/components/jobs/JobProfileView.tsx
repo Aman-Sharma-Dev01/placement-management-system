@@ -16,6 +16,7 @@ import {
   Trash2,
   ExternalLink,
 } from 'lucide-react';
+import { generateJobDescriptionPdf } from '../../utils/generateJobPdf';
 import { useApp } from '../../context/AppContext';
 import { PlacementDrive } from '../../types';
 import { drivesApi } from '../../api/drives.api';
@@ -500,6 +501,13 @@ const exportData = (type: 'all' | 'shortlisted') => {
                       </div>
 
                       <div className="flex items-center gap-1.5 ml-1">
+                        <button
+                          onClick={() => selectedDrive && generateJobDescriptionPdf(selectedDrive)}
+                          className="flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors shadow-sm"
+                          title="Download Job Description PDF"
+                        >
+                          <FileText size={13} /> Download JD
+                        </button>
                         <button 
                           onClick={() => setIsEditModalOpen(true)}
                           className="flex items-center justify-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 rounded-md w-8 h-8 transition-colors"
@@ -517,6 +525,16 @@ const exportData = (type: 'all' | 'shortlisted') => {
                         </button>
                       </div>
                     </>
+                  )}
+
+                  {!isPlacementOperator && (
+                    <button
+                      onClick={() => selectedDrive && generateJobDescriptionPdf(selectedDrive)}
+                      className="flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors"
+                      title="Download Job Description PDF"
+                    >
+                      <FileText size={14} /> Download JD
+                    </button>
                   )}
 
                   {!isPlacementOperator && !existingApplication && (

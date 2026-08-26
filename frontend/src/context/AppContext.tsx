@@ -9,12 +9,14 @@ import {
   UserRole,
   VerificationStatus,
   ApplicationStatus,
+  Blog,
 } from '../types';
 import { studentsApi } from '../api/students.api';
 import { drivesApi } from '../api/drives.api';
 import { companiesApi } from '../api/companies.api';
 import { applicationsApi } from '../api/applications.api';
 import { notificationsApi } from '../api/notifications.api';
+import { blogsApi } from '../api/blogs.api';
 
 interface AppContextType {
   role: UserRole;
@@ -27,6 +29,7 @@ interface AppContextType {
   companies: Company[];
   applications: Application[];
   notifications: NotificationItem[];
+  blogs: Blog[];
   
   // Actions
   applyToDrive: (driveId: string, resumeId: string) => Promise<void>;
@@ -82,6 +85,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   
   // Dummy fallback student while loading or if data is empty
@@ -90,16 +94,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchInitialData = async () => {
     try {
       // Fetch common data — each wrapped so one failure doesn't block others
-      const [drivesRes, companiesRes, appsRes, notifsRes] = await Promise.all([
+      const [drivesRes, companiesRes, appsRes, notifsRes, blogsRes] = await Promise.all([
         drivesApi.getAll().catch(() => []),
         companiesApi.getAll().catch(() => []),
         applicationsApi.getAll().catch(() => []),
-        notificationsApi.getAll().catch(() => [])
+        notificationsApi.getAll().catch(() => []),
+        blogsApi.getAll().catch(() => [])
       ]);
       setDrives(drivesRes);
       setCompanies(companiesRes);
       setApplications(appsRes);
       setNotifications(notifsRes);
+      setBlogs(blogsRes);
 
       // If user is admin/coordinator/cell, fetch all students
       if (role !== 'student') {
@@ -225,6 +231,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         companies,
         applications,
         notifications,
+        blogs,
         applyToDrive,
         verifyStudentProfile,
         bulkVerifyStudents,

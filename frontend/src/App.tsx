@@ -12,16 +12,18 @@ import { CompaniesDirectory } from './components/companies/CompaniesDirectory';
 import { AnalyticsReports } from './components/analytics/AnalyticsReports';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuthPage } from './components/auth/AuthPage';
+import { BlogsManager } from './components/blogs/BlogsManager';
+import { StudentBlogsFeed } from './components/blogs/StudentBlogsFeed';
 import  LandingPage  from './components/landing/LandingPage';
 
 const MainContent: React.FC = () => {
   const { activeTab, role } = useApp();
 
   const allowedTabsByRole: Record<string, string[]> = {
-    student: ['dashboard', 'jobs', 'student_profile', 'applications'],
-    placement_coordinator: ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics'],
-    placement_cell: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create'],
-    super_admin: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create'],
+    student: ['dashboard', 'student_dashboard', 'jobs', 'student_profile', 'applications'],
+    placement_coordinator: ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics', 'blogs'],
+    placement_cell: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create', 'blogs'],
+    super_admin: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create', 'blogs'],
   };
 
   const allowedTabs = allowedTabsByRole[role] || allowedTabsByRole.student;
@@ -30,6 +32,8 @@ const MainContent: React.FC = () => {
 
   switch (safeTab) {
     case 'dashboard':
+      return role === 'student' ? <StudentBlogsFeed /> : <OverviewDashboard />;
+    case 'student_dashboard':
       return <OverviewDashboard />;
     case 'jobs':
       return <JobProfileView />;
@@ -47,8 +51,10 @@ const MainContent: React.FC = () => {
       return <AnalyticsReports />;
     case 'settings':
       return <SettingsView />;
+    case 'blogs':
+      return <BlogsManager />;
     default:
-      return <OverviewDashboard />;
+      return role === 'student' ? <StudentBlogsFeed /> : <OverviewDashboard />;
   }
 };
 
