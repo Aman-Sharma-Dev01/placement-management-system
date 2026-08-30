@@ -178,7 +178,7 @@ const testimonials = [
 
 const faqs = [
   { q: "How do students apply to a company drive?", a: "Once a drive is published, eligible students see it on their dashboard and apply with one click using their verified profile and resume — no re-uploading documents per company." },
-  { q: "How do companies recruit through SUPRESET?", a: "Recruiters register, define role details and eligibility criteria, then get a live, filtered pool of applicants with resumes, scores and verification status ready to shortlist." },
+  { q: "How do companies recruit through SUPERSET?", a: "Recruiters register, define role details and eligibility criteria, then get a live, filtered pool of applicants with resumes, scores and verification status ready to shortlist." },
   { q: "How does eligibility filtering work?", a: "Coordinators configure rules — CGPA cutoff, backlog limit, branch and batch — per drive. Ineligible students are automatically excluded before applications open." },
   { q: "How is interview scheduling handled?", a: "Interview rounds, slots and panels are scheduled inside the platform, with automatic notifications to students and live status updates for recruiters and TPOs." },
   { q: "How are placement reports generated?", a: "Reports are generated in real time from live application and offer data — filterable by department, batch or company, and exportable for accreditation and audits." },
@@ -225,7 +225,7 @@ export default function LandingPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#10B981] to-[#34D399] shadow-md shadow-emerald-200">
               <span className="text-white font-bold text-sm">S</span>
             </div>
-            <span className="text-lg font-bold tracking-tight">SUPRESET</span>
+            <span className="text-lg font-bold tracking-tight">SUPERSET</span>
           </div>
 
           <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
@@ -449,7 +449,7 @@ export default function LandingPage() {
               One workflow, from registration to offer
             </h2>
             <p className="mt-4 text-slate-600">
-              Every placement cycle moves through the same nine stages. SUPRESET keeps
+              Every placement cycle moves through the same nine stages. SUPERSET keeps
               each one connected, so nothing falls through the cracks between teams.
             </p>
           </div>
@@ -644,7 +644,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-wider text-[#10B981]">Why SUPRESET</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-[#10B981]">Why SUPERSET</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
               Built to remove friction, not add features
             </h2>
@@ -854,7 +854,7 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#10B981] to-[#34D399]">
                   <span className="text-white font-bold text-xs">S</span>
                 </div>
-                <span className="font-bold">SUPRESET</span>
+                <span className="font-bold">SUPERSET</span>
               </div>
               <p className="mt-4 text-sm text-slate-500">
                 Role-based campus placement management, built for universities.
@@ -868,7 +868,7 @@ export default function LandingPage() {
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 sm:flex-row">
             <p className="text-sm text-slate-400">
-              © {new Date().getFullYear()} SUPRESET. All rights reserved.
+              © {new Date().getFullYear()} SUPERSET. All rights reserved.
             </p>
             <div className="flex gap-4 text-slate-400">
               {["M4 4h16v16H4z", "M4 4h16v16H4z", "M4 4h16v16H4z"].map((_, i) => (
