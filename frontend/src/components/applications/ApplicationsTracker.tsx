@@ -809,7 +809,6 @@ export const ApplicationsTracker: React.FC = () => {
                   <div className="flex justify-between"><span className="text-gray-500">Phone:</span> <strong className="text-gray-900">{selectedStudentForDetail.phone || '—'}</strong></div>
                   <div className="flex justify-between"><span className="text-gray-500">Branch:</span> <strong className="text-gray-900">{selectedStudentForDetail.branch}</strong></div>
                   <div className="flex justify-between"><span className="text-gray-500">Gender:</span> <strong className="text-gray-900">{selectedStudentForDetail.gender}</strong></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Category:</span> <strong className="text-gray-900">{selectedStudentForDetail.category}</strong></div>
                 </div>
               </div>
 

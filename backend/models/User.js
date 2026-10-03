@@ -15,11 +15,19 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    password: {
+password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: true,
       minlength: 6,
       select: false, // Don't return password by default
+    },
+    // Google's unique account id. Sparse so the many non-Google users are
+    // all allowed to omit it.
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+      default: undefined,
     },
     role: {
       type: String,

@@ -9,6 +9,15 @@ interface StudentsResponse {
   pages: number;
 }
 
+interface OnboardPayload {
+  rollNo: string;
+  branch: string;
+  batchYear: number;
+  gender: string;
+  department?: string;
+  phone?: string;
+}
+
 export const studentsApi = {
   getAll: (params?: Record<string, string>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
@@ -30,4 +39,12 @@ export const studentsApi = {
 
   bulkVerify: (studentIds: string[], status: VerificationStatus) =>
     apiClient.patch<{ message: string }>('/students/bulk-verify', { studentIds, status }),
+
+  onboard: (data: OnboardPayload) =>
+    apiClient
+      .post<{ student: Student; supersetId: string }>('/students/onboard', data)
+      .then((response) => ({
+        student: normalizeStudent(response.student),
+        supersetId: response.supersetId,
+      })),
 };

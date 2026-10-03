@@ -22,11 +22,6 @@ const studentSchema = new mongoose.Schema(
       enum: ['Male', 'Female', 'Other'],
       required: true,
     },
-    category: {
-      type: String,
-      enum: ['General', 'OBC', 'SC', 'ST', 'EWS'],
-      default: 'General',
-    },
 
     // Verification
     verificationStatus: {

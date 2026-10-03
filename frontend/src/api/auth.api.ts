@@ -15,7 +15,6 @@ export interface RegisterPayload {
   department?: string;
   batchYear?: number;
   gender?: string;
-  category?: string;
   phone?: string;
 }
 
@@ -27,10 +26,13 @@ export interface AuthResponse {
   avatarUrl: string;
   token: string;
   studentProfile?: unknown;
+  needsOnboarding?: boolean;
+  linkedExistingAccount?: boolean;
 }
 
 export const authApi = {
   login: (data: LoginPayload) => apiClient.post<AuthResponse>('/auth/login', data),
   register: (data: RegisterPayload) => apiClient.post<AuthResponse>('/auth/register', data),
+  googleLogin: (credential: string) => apiClient.post<AuthResponse>('/auth/google', { credential }),
   getMe: () => apiClient.get<AuthResponse>('/auth/me'),
 };

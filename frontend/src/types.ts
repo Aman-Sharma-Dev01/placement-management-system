@@ -33,7 +33,6 @@ export interface Student {
   department: string;
   batchYear: number;
   gender: 'Male' | 'Female' | 'Other';
-  category: 'General' | 'OBC' | 'SC' | 'ST' | 'EWS';
   
   // Verification
   verificationStatus: VerificationStatus;

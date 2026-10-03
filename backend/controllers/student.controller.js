@@ -1,6 +1,7 @@
 const Student = require('../models/Student');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const { allocateSupersetId } = require('../utils/supersetId');
 
 const calculateProfileCompletion = (student) => {
   const data = student?.toObject ? student.toObject() : student || {};
@@ -18,7 +19,6 @@ const calculateProfileCompletion = (student) => {
     !!data.branch,
     !!data.batchYear,
     !!data.gender,
-    !!data.category,
     !!data.education?.tenth?.institution,
     !!data.education?.tenth?.board,
     Number(data.education?.tenth?.percentage || 0) > 0,
@@ -247,6 +247,80 @@ const bulkVerifyStudents = async (req, res) => {
   }
 };
 
+// @desc    Create the student profile for an account that has none yet.
+//          Used after Google sign-in, where the required academic details
+//          could not be collected up front.
+// @route   POST /api/students/onboard
+// @access  Private (student)
+const onboardStudent = async (req, res) => {
+  try {
+    if (req.user.role !== 'student') {
+      return res.status(403).json({ message: 'Only student accounts have a student profile' });
+    }
+
+    const { rollNo, branch, department, batchYear, gender, phone } = req.body;
+
+    if (!rollNo || !branch || !batchYear || !gender) {
+      return res.status(400).json({
+        message: 'Roll No, branch, batch year and gender are required',
+      });
+    }
+
+    const existing = await Student.findOne({ userId: req.user._id });
+    if (existing) {
+      return res.status(409).json({ message: 'Student profile already exists' });
+    }
+
+    const student = await Student.create({
+      userId: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      phone: phone || '',
+      rollNo: String(rollNo).trim(),
+      branch,
+      department: department || '',
+      batchYear: Number(batchYear),
+      gender,
+      avatarUrl: req.user.avatarUrl || '',
+      verificationStatus: 'pending',
+      education: {
+        tenth: { institution: '', board: '', percentage: 0, passingYear: 0 },
+        twelfthOrDiploma: 'twelfth',
+        twelfth: { institution: '', board: '', percentage: 0, passingYear: 0 },
+        diploma: { institution: '', board: '', percentage: 0, passingYear: 0 },
+        graduation: {
+          university: '',
+          branch,
+          cgpa: 0,
+          sgpaPerSemester: [],
+          passingYear: Number(batchYear),
+          backlogs: { active: 0, history: 0 },
+          gapYears: 0,
+        },
+      },
+    });
+
+    try {
+      // allocateSupersetId writes with updateOne, so mirror the value onto
+      // the in-memory document for the response below.
+      student.supersetId = await allocateSupersetId(student);
+    } catch (idError) {
+      console.error('Superset ID allocation failed:', idError.message);
+    }
+
+    res.status(201).json({
+      student: serializeStudent(student),
+      supersetId: student.supersetId,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'That roll number is already registered' });
+    }
+    console.error('Onboarding error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getStudents,
   getStudentById,
@@ -254,4 +328,5 @@ module.exports = {
   updateStudent,
   verifyStudent,
   bulkVerifyStudents,
+  onboardStudent,
 };

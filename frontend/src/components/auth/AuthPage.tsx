@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { authApi } from '../../api/auth.api';
+import { GoogleButton } from './GoogleButton';
 import { toast } from '../../utils/toast';
 
 interface AuthPageProps {
@@ -41,6 +42,7 @@ const highlights = [
 export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -80,6 +82,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
       toast.error(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setIsGoogleLoading(true);
+
+    try {
+      const data = await authApi.googleLogin(credential);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data));
+      onLoginSuccess(data, data.token);
+
+      if (data.linkedExistingAccount) {
+        toast.success(`Welcome back, ${data.name}!`);
+      } else if (data.needsOnboarding) {
+        toast.success(`Signed in as ${data.name} — one last step.`);
+      } else {
+        toast.success(`Welcome, ${data.name}!`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Google sign-in failed');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -377,6 +402,27 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                   )}
                 </button>
               </form>
+
+              {/* Google Sign-In */}
+              <div className="my-6 flex items-center gap-4">
+                <div className="h-px flex-1 bg-gray-200" />
+                <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                  or
+                </span>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+
+              <div className={isLoading || isGoogleLoading ? 'pointer-events-none opacity-60' : ''}>
+                <GoogleButton
+                  onCredential={handleGoogleCredential}
+                  onError={(message) => toast.error(message)}
+                  text={isLogin ? 'signin_with' : 'signup_with'}
+                />
+              </div>
+
+              <p className="mt-4 text-center text-xs leading-relaxed text-gray-400">
+                New students continue to a short form to finish their profile.
+              </p>
             </div>
 
             <p className="mt-6 text-center text-sm text-gray-500">

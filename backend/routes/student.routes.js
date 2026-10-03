@@ -7,9 +7,13 @@ const {
   updateStudent,
   verifyStudent,
   bulkVerifyStudents,
+  onboardStudent,
 } = require('../controllers/student.controller');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/role');
+
+// Create the missing student profile after Google sign-in
+router.post('/onboard', protect, onboardStudent);
 
 // Student's own profile — must be before /:id to avoid conflict
 router.get('/me', protect, getMyProfile);

@@ -470,8 +470,7 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
     { label: 'Roll Number', done: !!s.rollNo },
     { label: 'Branch', done: !!s.branch },
     { label: 'Batch Year', done: !!s.batchYear },
-    { label: 'Gender', done: !!s.gender },
-    { label: 'Category', done: !!s.category },
+{ label: 'Gender', done: !!s.gender },
     { label: '10th Institution', done: !!s.education?.tenth?.institution },
     { label: '10th Board', done: !!s.education?.tenth?.board },
     { label: '10th Percentage', done: Number(s.education?.tenth?.percentage || 0) > 0 },
@@ -688,10 +687,6 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
                 <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                   <span className="text-gray-500 block text-[11px] mb-1">Gender:</span>
                   <span className="font-medium text-gray-900 text-[13px]">{activeStudent.gender}</span>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
-                  <span className="text-gray-500 block text-[11px] mb-1">Category:</span>
-                  <span className="font-medium text-gray-900 text-[13px]">{activeStudent.category}</span>
                 </div>
               </div>
             </div>
