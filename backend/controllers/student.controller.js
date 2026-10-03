@@ -1,7 +1,7 @@
 const Student = require('../models/Student');
 const User = require('../models/User');
-const Notification = require('../models/Notification');
 const { allocateSupersetId } = require('../utils/supersetId');
+const notificationService = require('../services/notificationService');
 
 const calculateProfileCompletion = (student) => {
   const data = student?.toObject ? student.toObject() : student || {};
@@ -157,6 +157,8 @@ const updateStudent = async (req, res) => {
     const profileCompletionPercentage = calculateProfileCompletion({ ...student.toObject(), ...req.body });
     req.body.profileCompletionPercentage = profileCompletionPercentage;
 
+    const previousStatus = student.verificationStatus;
+
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
@@ -172,7 +174,21 @@ const updateStudent = async (req, res) => {
     }
 
     res.json(serializeStudent(updatedStudent));
+
+    // A student resubmitting after corrections goes back into the review queue,
+    // so the coordinator needs to know. Saving an unrelated field does not.
+    const resubmitted =
+      req.user.role === 'student' &&
+      req.body.verificationStatus === 'pending' &&
+      previousStatus !== 'pending';
+
+    if (resubmitted) {
+      notificationService
+        .profilePendingReview({ student: updatedStudent, isResubmission: true })
+        .catch((error) => console.error('Resubmission notification failed:', error.message));
+    }
   } catch (error) {
+    console.error('Update student error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -201,16 +217,15 @@ const verifyStudent = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    // Send notification to student
-    await Notification.create({
-      userId: student.userId,
-      title: `Profile ${status === 'verified' ? 'Verified' : status === 'rejected' ? 'Rejected' : 'Under Review'}`,
-      message: remarks || `Your profile has been ${status} by the placement coordinator.`,
-      type: 'verification',
-    });
-
     res.json(serializeStudent(student));
+
+    // In-app + email go through one service so a repeat request for the same
+    // outcome with the same remarks cannot double-notify.
+    notificationService
+      .profileDecision({ student, status, remarks: remarks || '' })
+      .catch((error) => console.error('Verification notification failed:', error.message));
   } catch (error) {
+    console.error('Verify student error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -226,23 +241,32 @@ const bulkVerifyStudents = async (req, res) => {
       return res.status(400).json({ message: 'Please provide studentIds array' });
     }
 
+    if (!['verified', 'pending', 'rejected', 'draft'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid verification status' });
+    }
+
     await Student.updateMany(
       { _id: { $in: studentIds } },
       { verificationStatus: status }
     );
 
-    // Create notifications for all students
     const students = await Student.find({ _id: { $in: studentIds } });
-    const notifications = students.map((s) => ({
-      userId: s.userId,
-      title: `Profile Bulk ${status}`,
-      message: `Your profile has been ${status} by the placement coordinator.`,
-      type: 'verification',
-    }));
-    await Notification.insertMany(notifications);
 
     res.json({ message: `${studentIds.length} students marked as ${status}` });
+
+    // Emails are queued per student after the response; a 200-student bulk
+    // verify must not turn into 200 blocking SMTP round trips.
+    (async () => {
+      for (const student of students) {
+        try {
+          await notificationService.profileDecision({ student, status });
+        } catch (error) {
+          console.error(`Bulk notify failed for ${student._id}:`, error.message);
+        }
+      }
+    })();
   } catch (error) {
+    console.error('Bulk verify error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -312,6 +336,11 @@ const onboardStudent = async (req, res) => {
       student: serializeStudent(student),
       supersetId: student.supersetId,
     });
+
+    // A new profile lands in the coordinator's verification queue.
+    notificationService
+      .profilePendingReview({ student, isResubmission: false })
+      .catch((error) => console.error('Onboarding notification failed:', error.message));
   } catch (error) {
     if (error.code === 11000) {
       return res.status(409).json({ message: 'That roll number is already registered' });

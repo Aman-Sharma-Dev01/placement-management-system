@@ -15,11 +15,13 @@ import {
   X,
   Loader2,
   Trash2,
+  Bell,
   XCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { uploadApi } from '../../api/upload.api';
 import { toast } from '../../utils/toast';
+import { NotificationPreferencesCard } from './NotificationPreferencesCard';
 
 export const StudentProfileView: React.FC = () => {
   const { activeStudent, updateStudentData, role, verifyStudentProfile } = useApp();
@@ -457,6 +459,7 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
     { id: 'projects', label: 'Projects', icon: <Briefcase size={16} /> },
     { id: 'accomplishments', label: 'Accomplishments', icon: <Trophy size={16} /> },
     { id: 'resumes', label: 'Resumes & Documents', icon: <FileText size={16} /> },
+    { id: 'notifications', label: 'Email Notifications', icon: <Bell size={16} /> },
   ];
   const s = activeStudent;
   const isDiplomaStudent = s.education?.twelfthOrDiploma === 'diploma';
@@ -1150,6 +1153,11 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
                 )}
               </div>
             </div>
+          )}
+
+          {/* Section: Email Notification Preferences */}
+          {activeSection === 'notifications' && (
+            <NotificationPreferencesCard />
           )}
         </div>
       </div>

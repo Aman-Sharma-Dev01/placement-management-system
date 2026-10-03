@@ -44,6 +44,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  // 'request' shows the forgot-password panel; 'sent' shows the confirmation.
+  const [resetMode, setResetMode] = useState<'request' | 'sent' | null>(null);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,8 +90,24 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleGoogleCredential = async (credential: string) => {
-    setIsGoogleLoading(true);
+  /**
+   * The backend always answers with the same message whether or not the email
+   * is registered, so this must never branch on success — showing a different
+   * message here would leak which addresses have accounts.
+   */
+  const handleForgotPassword = async () => {
+    setResetLoading(true);
+    try {
+      await authApi.forgotPassword(resetEmail);
+      setResetMode('sent');
+    } catch (error: any) {
+      toast.error(error.message || 'Could not send the reset link. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {    setIsGoogleLoading(true);
 
     try {
       const data = await authApi.googleLogin(credential);
@@ -371,17 +392,69 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
                 </Field>
 
                 {isLogin && (
-                  <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2 text-gray-600 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 bg-white text-emerald-600 focus:ring-emerald-500"
-                      />
-                      Remember me
-                    </label>
-                    <a href="#" className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors">
+                  <div className="flex items-center justify-end text-sm">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetMode('request');
+                        setResetEmail(email);
+                      }}
+                      className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+                    >
                       Forgot password?
-                    </a>
+                    </button>
+                  </div>
+                )}
+
+                {/* Forgot-password inline panel */}
+                {isLogin && resetMode === 'request' && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 space-y-3">
+                    <p className="text-[13px] text-gray-700">
+                      Enter your email and we will send you a reset link.
+                    </p>
+                    <input
+                      type="email"
+                      required
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      className="block w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-sm text-gray-900 focus:ring-2 focus:ring-emerald-500"
+                      placeholder="you@university.edu.in"
+                    />
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={resetLoading}
+                        onClick={handleForgotPassword}
+                        className="px-4 py-2 rounded-lg text-[13px] font-semibold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 flex items-center gap-2"
+                      >
+                        {resetLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Send reset link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResetMode(null)}
+                        className="text-[13px] font-medium text-gray-500 hover:text-gray-700"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {isLogin && resetMode === 'sent' && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 space-y-2">
+                    <p className="text-[13px] font-semibold text-gray-800">Check your inbox</p>
+                    <p className="text-[13px] text-gray-600">
+                      If an account exists for {resetEmail}, a reset link is on its way. The
+                      link expires in 60 minutes and can only be used once.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setResetMode(null)}
+                      className="text-[13px] font-medium text-emerald-700 hover:underline"
+                    >
+                      Back to sign in
+                    </button>
                   </div>
                 )}
 

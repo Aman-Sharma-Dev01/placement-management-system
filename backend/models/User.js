@@ -38,6 +38,18 @@ password: {
       type: String,
       default: '',
     },
+
+    // Email/notification preferences. Security emails (welcome, password
+    // reset/change) deliberately ignore these — they are not suppressible.
+    notificationPreferences: {
+      emailNotificationsEnabled: { type: Boolean, default: true },
+      // 'jobs' | 'applications' | 'interviews' | 'profile'
+      mutedCategories: {
+        type: [String],
+        enum: ['jobs', 'applications', 'interviews', 'profile'],
+        default: [],
+      },
+    },
   },
   { timestamps: true }
 );

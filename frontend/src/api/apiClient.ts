@@ -5,7 +5,23 @@ interface RequestOptions {
   method?: string;
   body?: unknown;
   headers?: Record<string, string>;
+  params?: Record<string, string | number | boolean | undefined>;
 }
+
+const withQuery = (
+  endpoint: string,
+  params?: RequestOptions['params'],
+): string => {
+  if (!params) return endpoint;
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return;
+    search.append(key, String(value));
+  });
+  const query = search.toString();
+  if (!query) return endpoint;
+  return endpoint.includes('?') ? `${endpoint}&${query}` : `${endpoint}?${query}`;
+};
 
 class ApiClient {
   private getToken(): string | null {
@@ -32,7 +48,7 @@ class ApiClient {
       config.body = JSON.stringify(options.body);
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, config);
+    const response = await fetch(`${API_BASE}${withQuery(endpoint, options.params)}`, config);
 
     if (response.status === 401) {
       // Token expired or invalid
@@ -51,8 +67,8 @@ class ApiClient {
     return data as T;
   }
 
-  get<T>(endpoint: string) {
-    return this.request<T>(endpoint);
+  get<T>(endpoint: string, options: Pick<RequestOptions, 'params'> = {}) {
+    return this.request<T>(endpoint, options);
   }
 
   post<T>(endpoint: string, body: unknown) {

@@ -175,13 +175,38 @@ export const normalizeCompany = (company: any): Company => ({
 
 export const normalizeCompanies = (companies: any[]): Company[] => normalizeArray(companies).map(normalizeCompany);
 
-export const normalizeNotification = (notification: any): NotificationItem => ({
-  ...notification,
-  id: toId(notification),
-  timestamp: notification?.timestamp || '',
-  read: Boolean(notification?.read),
-  type: notification?.type || 'drive',
-});
+const NOTIFICATION_TYPES = [
+  'drive',
+  'verification',
+  'interview',
+  'offer',
+  'application',
+  'account',
+  'system',
+];
+
+const NOTIFICATION_PRIORITIES = ['LOW', 'NORMAL', 'HIGH', 'CRITICAL'];
+
+export const normalizeNotification = (notification: any): NotificationItem => {
+  const type = NOTIFICATION_TYPES.includes(notification?.type) ? notification.type : 'drive';
+  const priority = NOTIFICATION_PRIORITIES.includes(notification?.priority)
+    ? notification.priority
+    : 'NORMAL';
+
+  return {
+    ...notification,
+    id: toId(notification),
+    timestamp: notification?.timestamp || '',
+    read: Boolean(notification?.read),
+    type,
+    priority,
+    linkDriveId: notification?.linkDriveId || '',
+    entityType: notification?.entityType || '',
+    entityId: notification?.entityId || '',
+    emailSent: Boolean(notification?.emailSent),
+    emailError: notification?.emailError || '',
+  };
+};
 
 export const normalizeNotifications = (notifications: any[]): NotificationItem[] =>
   normalizeArray(notifications).map(normalizeNotification);

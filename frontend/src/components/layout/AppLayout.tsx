@@ -14,14 +14,68 @@ import {
   LogOut,
   Menu as MenuIcon,
   X,
-  Plus
+  Plus,
+  Sparkles,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { UserRole, NotificationItem } from '../../types';
+import { UserRole, NotificationItem, NotificationPriority } from '../../types';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
+
+/** Left-edge accent + unread tint, so CRITICAL items are visually obvious. */
+const priorityStyles: Record<
+  NotificationPriority,
+  { card: string; icon: string; dot: string; label: string }
+> = {
+  CRITICAL: {
+    card: 'bg-red-50 border-red-200',
+    icon: 'bg-red-600 text-white',
+    dot: 'bg-red-500',
+    label: 'Urgent',
+  },
+  HIGH: {
+    card: 'bg-amber-50 border-amber-200',
+    icon: 'bg-amber-600 text-white',
+    dot: 'bg-amber-500',
+    label: 'Important',
+  },
+  NORMAL: {
+    card: 'bg-emerald-50 border-emerald-100',
+    icon: 'bg-emerald-600 text-white',
+    dot: 'bg-emerald-500',
+    label: 'Update',
+  },
+  LOW: {
+    card: 'bg-white border-gray-100',
+    icon: 'bg-gray-100 text-gray-500',
+    dot: 'bg-gray-400',
+    label: 'Info',
+  },
+};
+
+/** Where a notification should take the user when clicked. */
+/**
+ * Where a notification should take the reader.
+ *
+ * Some entity types resolve to a different tab per role: a student's own
+ * "profile approved" notification belongs on their profile, while a coordinator
+ * reviewing that same student belongs in the verification directory. Candidates
+ * are listed most-specific first and the first one the current role is actually
+ * allowed to open wins, so a click can never switch into a forbidden tab.
+ */
+const TARGET_TABS_BY_ENTITY: Record<string, string[]> = {
+  drive: ['jobs'],
+  application: ['applications'],
+  student: ['students_directory', 'student_profile'],
+  user: ['student_profile'],
+};
+
+const resolveTargetTab = (entityType: string | undefined, allowedTabs: string[]) => {
+  const candidates = TARGET_TABS_BY_ENTITY[entityType || ''] || [];
+  return candidates.find((tab) => allowedTabs.includes(tab)) || 'dashboard';
+};
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const {
@@ -29,7 +83,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     setRole,
     activeStudent,
     notifications,
+    unreadCount,
     markNotificationAsRead,
+    markAllNotificationsAsRead,
     activeTab,
     setActiveTab,
   } = useApp();
@@ -37,8 +93,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [notifDrawerVisible, setNotifDrawerVisible] = useState(false);
   const [userDropdownVisible, setUserDropdownVisible] = useState(false);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const roleLabels: Record<UserRole, { label: string; color: string; bg: string }> = {
     student: { label: 'Student Portal', color: 'text-emerald-700', bg: 'bg-emerald-50' },
@@ -328,9 +382,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <h2 className="font-semibold text-[15px] text-gray-900">Notifications & Alerts</h2>
               <div className="flex items-center gap-2">
-                {unreadCount > 0 && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-medium rounded">
-                  {unreadCount} New
-                </span>}
+                {unreadCount > 0 && (
+                  <>
+                    <button
+                      onClick={() => markAllNotificationsAsRead()}
+                      className="text-[11px] font-medium text-emerald-700 hover:text-emerald-800 hover:underline whitespace-nowrap"
+                    >
+                      Mark all read
+                    </button>
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-medium rounded">
+                      {unreadCount} New
+                    </span>
+                  </>
+                )}
                 <button onClick={() => setNotifDrawerVisible(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-50">
                   <X size={16} />
                 </button>
@@ -338,36 +402,85 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {notifications.map((item: NotificationItem) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    markNotificationAsRead(item.id);
-                    if (item.linkDriveId) {
-                      setActiveTab('jobs');
-                      setNotifDrawerVisible(false);
-                    }
-                  }}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors flex gap-3 ${
-                    item.read ? 'bg-white border-gray-100' : 'bg-emerald-50 border-emerald-100'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
-                    item.read ? 'bg-gray-100 text-gray-500' : 'bg-emerald-600 text-white'
-                  }`}>
-                    {item.type === 'drive' ? <Briefcase size={14} /> :
-                     item.type === 'verification' ? <ShieldCheck size={14} /> :
-                     <Bell size={14} />}
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-semibold text-gray-900 text-[13px] leading-tight">{item.title}</h4>
-                      <span className="text-[11px] text-gray-400 whitespace-nowrap">{item.timestamp}</span>
-                    </div>
-                    <p className="text-gray-600 text-[12px] mt-1 leading-snug">{item.message}</p>
-                  </div>
+              {notifications.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Bell size={28} className="mx-auto mb-2 opacity-50" />
+                  <p className="text-[13px]">Nothing here yet</p>
+                  <p className="text-[11px] mt-1">
+                    Drive openings and application updates will show up here.
+                  </p>
                 </div>
-              ))}
+              ) : (
+                notifications.map((item: NotificationItem) => {
+                  const style = priorityStyles[item.priority] || priorityStyles.NORMAL;
+                  // `linkDriveId` is an explicit link and wins; otherwise fall
+                  // back to the entity type, resolved against this role's tabs.
+                  const targetTab = item.linkDriveId
+                    ? allowedTabs.includes('jobs')
+                      ? 'jobs'
+                      : resolveTargetTab(item.entityType, allowedTabs)
+                    : resolveTargetTab(item.entityType, allowedTabs);
+
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        markNotificationAsRead(item.id);
+                        setActiveTab(targetTab);
+                        setNotifDrawerVisible(false);
+                      }}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors flex gap-3 ${
+                        item.read ? 'bg-white border-gray-100' : style.card
+                      }`}
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+                          item.read ? 'bg-gray-100 text-gray-500' : style.icon
+                        }`}
+                      >
+                        {item.type === 'drive' || item.type === 'application' ? (
+                          <Briefcase size={14} />
+                        ) : item.type === 'verification' ? (
+                          <ShieldCheck size={14} />
+                        ) : item.type === 'offer' ? (
+                          <Sparkles size={14} />
+                        ) : (
+                          <Bell size={14} />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="font-semibold text-gray-900 text-[13px] leading-tight">
+                            {item.title}
+                          </h4>
+                          <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                            {item.timestamp}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-[12px] mt-1 leading-snug">
+                          {item.message}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {!item.read && (
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${style.dot}`}
+                              aria-hidden="true"
+                            />
+                          )}
+                          {!item.read && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                              {style.label}
+                            </span>
+                          )}
+                          <span className="text-[10px] font-medium text-emerald-700">
+                            View →
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

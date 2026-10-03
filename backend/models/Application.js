@@ -11,6 +11,9 @@ const stageHistorySchema = new mongoose.Schema(
       default: 'pending',
     },
     feedback: { type: String, default: '' },
+    // Coordinator feedback is confidential by default. It is only ever put in
+    // an email when this is explicitly true.
+    feedbackVisibleToStudent: { type: Boolean, default: false },
   },
   { _id: false }
 );

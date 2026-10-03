@@ -29,6 +29,7 @@ interface AppContextType {
   companies: Company[];
   applications: Application[];
   notifications: NotificationItem[];
+  unreadCount: number;
   blogs: Blog[];
   
   // Actions
@@ -38,6 +39,8 @@ interface AppContextType {
   createPlacementDrive: (drive: Omit<PlacementDrive, 'id' | 'totalAppliedCount' | 'shortlistedCount' | 'selectedCount'>) => Promise<void>;
   updateApplicationStage: (applicationId: string, stageId: string, status: ApplicationStatus, feedback?: string) => Promise<void>;
   markNotificationAsRead: (notificationId: string) => Promise<void>;
+  markAllNotificationsAsRead: () => Promise<void>;
+  refreshNotifications: () => Promise<void>;
   updateStudentData: (updatedStudent: Student) => Promise<void>;
   
   // Quick Filter
@@ -85,6 +88,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   
@@ -98,13 +102,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         drivesApi.getAll().catch(() => []),
         companiesApi.getAll().catch(() => []),
         applicationsApi.getAll().catch(() => []),
-        notificationsApi.getAll().catch(() => []),
+        notificationsApi.getAll().catch(() => ({ notifications: [], unreadCount: 0 })),
         blogsApi.getAll().catch(() => [])
       ]);
       setDrives(drivesRes);
       setCompanies(companiesRes);
       setApplications(appsRes);
-      setNotifications(notifsRes);
+      setNotifications(notifsRes.notifications);
+      setUnreadCount(notifsRes.unreadCount);
       setBlogs(blogsRes);
 
       // If user is admin/coordinator/cell, fetch all students
@@ -200,11 +205,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const markNotificationAsRead = async (notificationId: string) => {
     try {
       await notificationsApi.markAsRead(notificationId);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notificationId || n._id === notificationId ? { ...n, read: true } : n))
-      );
+      setNotifications((prev) => {
+        const next = prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n));
+        // Only decrement when this item was actually unread, so the badge
+        // cannot drift below zero on a repeated click.
+        const wasUnread = prev.some((n) => n.id === notificationId && !n.read);
+        if (wasUnread) setUnreadCount((count) => Math.max(0, count - 1));
+        return next;
+      });
     } catch (error: any) {
       console.error('Failed to mark read', error);
+    }
+  };
+
+  const markAllNotificationsAsRead = async () => {
+    try {
+      await notificationsApi.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch (error: any) {
+      console.error('Failed to mark all as read', error);
+      message.error('Could not mark all notifications as read');
+    }
+  };
+
+  /** Re-pulls the feed so the bell stays in sync after a deep-linked action. */
+  const refreshNotifications = async () => {
+    try {
+      const feed = await notificationsApi.getAll();
+      setNotifications(feed.notifications);
+      setUnreadCount(feed.unreadCount);
+    } catch (error) {
+      console.error('Failed to refresh notifications', error);
     }
   };
 
@@ -231,6 +263,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         companies,
         applications,
         notifications,
+        unreadCount,
         blogs,
         applyToDrive,
         verifyStudentProfile,
@@ -238,6 +271,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createPlacementDrive,
         updateApplicationStage,
         markNotificationAsRead,
+        markAllNotificationsAsRead,
+        refreshNotifications,
         updateStudentData,
         activeTab,
         setActiveTab,

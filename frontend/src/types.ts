@@ -223,15 +223,36 @@ export interface Company {
   };
 }
 
+export type NotificationPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+
 export interface NotificationItem {
   id: string;
   title: string;
   message: string;
   timestamp: string;
   read: boolean;
-  type: 'drive' | 'verification' | 'interview' | 'offer';
+  type: 'drive' | 'verification' | 'interview' | 'offer' | 'application' | 'account' | 'system';
   targetRole?: UserRole;
   linkDriveId?: string;
+  /** Drives how prominently the item is rendered in the bell drawer. */
+  priority: NotificationPriority;
+  /** Generic deep-link target, e.g. { entityType: 'drive', entityId }. */
+  entityType?: string;
+  entityId?: string;
+  /** Email delivery state, useful for debugging from the UI. */
+  emailSent?: boolean;
+  emailError?: string;
+}
+
+/** Shape returned by GET /api/notifications. */
+export interface NotificationFeed {
+  notifications: NotificationItem[];
+  unreadCount: number;
+}
+
+export interface NotificationPreferences {
+  emailNotificationsEnabled: boolean;
+  mutedCategories: Array<'jobs' | 'applications' | 'interviews' | 'profile'>;
 }
 
 export interface FilterState {

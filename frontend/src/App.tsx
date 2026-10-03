@@ -13,6 +13,7 @@ import { AnalyticsReports } from './components/analytics/AnalyticsReports';
 import { SettingsView } from './components/settings/SettingsView';
 import { AuthPage } from './components/auth/AuthPage';
 import { OnboardingPage } from './components/auth/OnboardingPage';
+import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
 import { BlogsManager } from './components/blogs/BlogsManager';
 import { StudentBlogsFeed } from './components/blogs/StudentBlogsFeed';
 import  LandingPage  from './components/landing/LandingPage';
@@ -155,6 +156,11 @@ export default function App() {
         ) : (
           <Navigate to="/app" replace />
         )} />
+
+        {/* Reachable while logged in — someone resetting a password from a
+            expired session must not be bounced to the landing page. */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       </Routes>
     </Router>
   );

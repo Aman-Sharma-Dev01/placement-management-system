@@ -4,12 +4,19 @@ const {
   getApplications,
   applyToDrive,
   updateApplicationStage,
+  withdrawApplication,
 } = require('../controllers/application.controller');
 const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/role');
 
 router.get('/', protect, getApplications);
 router.post('/', protect, authorize('student'), applyToDrive);
+router.patch(
+  '/:id/withdraw',
+  protect,
+  authorize('student'),
+  withdrawApplication
+);
 router.patch(
   '/:id/stage',
   protect,
