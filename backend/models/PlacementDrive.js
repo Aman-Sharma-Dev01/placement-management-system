@@ -32,6 +32,7 @@ const eligibilityRulesSchema = new mongoose.Schema(
     maxActiveBacklogs: { type: Number, default: 0 },
     maxHistoryBacklogs: { type: Number, default: 0 },
     maxGapYears: { type: Number, default: 0 },
+    allowedBatchYears: { type: [Number], default: [] },
     allowedCategories: { type: [String], default: ['General', 'OBC', 'SC', 'ST', 'EWS'] },
     maxExistingOffers: { type: Number, default: 1 },
     offerCategoryRestriction: { type: String, default: '' },

@@ -58,8 +58,8 @@ export const DriveCreationWizard: React.FC = () => {
     maxActiveBacklogs: '0',
     maxHistoryBacklogs: '1',
     maxGapYears: '1',
+    eligibility: {} as any,
   });
-
   const [allowedBranches, setAllowedBranches] = useState<string[]>([
     'B.Tech - Computer Science and Engineering',
     'B.Tech - Information Technology',
@@ -567,6 +567,37 @@ export const DriveCreationWizard: React.FC = () => {
                   </label>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-[12px] font-medium text-gray-700 mb-2">Eligible Batch Years</label>
+              <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                {(() => {
+                  const current = new Date().getFullYear();
+                  return Array.from({ length: 6 }).map((_, idx) => {
+                    const y = current + 4 - idx;
+                    return (
+                      <label key={y} className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={(formValues.eligibility?.allowedBatchYears || []).includes(y)}
+                          onChange={() => {
+                            const existing = formValues.eligibility?.allowedBatchYears || [];
+                            const updated = existing.includes(y) ? existing.filter(v => v !== y) : [...existing, y];
+                            setFormValues({
+                              ...formValues,
+                              eligibility: { ...formValues.eligibility, allowedBatchYears: updated }
+                            });
+                          }}
+                          className="w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                        />
+                        <span className="text-[12px] text-gray-800">{y}</span>
+                      </label>
+                    );
+                  });
+                })()}
+              </div>
+              <p className="mt-1.5 text-[11px] text-gray-500">Leave empty to allow all batches.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

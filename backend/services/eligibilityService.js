@@ -48,6 +48,24 @@ const evaluate = (student, drive) => {
     }
   }
 
+  // --- Batch / admission year --------------------------------------------
+  const allowedBatches = Array.isArray(rules.allowedBatchYears)
+    ? rules.allowedBatchYears
+    : Array.isArray(rules.allowedBatches)
+    ? rules.allowedBatches
+    : [];
+  if (allowedBatches.length) {
+    const studentBatch = numOrNull(student.batchYear);
+    const matches = studentBatch !== null && allowedBatches.includes(studentBatch);
+    if (matches) {
+      summary.push(`Batch: ${studentBatch}`);
+    } else {
+      reasons.push(
+        `Your batch (${student.batchYear || 'not set'}) is not eligible for this drive`
+      );
+    }
+  }
+
   // --- CGPA -------------------------------------------------------------
   const minCgpa = num(rules.minCgpa);
   if (minCgpa > 0) {
@@ -141,7 +159,7 @@ const evaluate = (student, drive) => {
  */
 const findEligibleStudents = async (drive, { excludeApplied = false } = {}) => {
   const students = await Student.find({}).select(
-    'userId name email branch rollNo supersetId verificationStatus education appliedDriveIds'
+    'userId name email branch rollNo supersetId verificationStatus education appliedDriveIds batchYear'
   );
 
   const eligible = students.filter((student) => evaluate(student, drive).eligible);

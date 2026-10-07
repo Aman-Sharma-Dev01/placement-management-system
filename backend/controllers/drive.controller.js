@@ -169,6 +169,7 @@ const ELIGIBILITY_LABELS = {
   maxActiveBacklogs: 'Max active backlogs',
   maxHistoryBacklogs: 'Max history backlogs',
   maxGapYears: 'Max gap years',
+  allowedBatchYears: 'Allowed batches',
 };
 
 const sameValue = (a, b) => String(a ?? '') === String(b ?? '');
