@@ -17,7 +17,8 @@ const DRAIN_INTERVAL_MS = Number(process.env.EMAIL_DRAIN_INTERVAL_MS || 250);
 
 let queue = [];
 let draining = false;
-let drainTimer = null;
+let drainTimeout = null; // setTimeout for immediate drain
+let sweepTimer = null;    // setInterval for periodic sweep
 let droppedCount = 0;
 
 const stats = () => ({
@@ -65,13 +66,13 @@ const enqueue = (job, delayMs = 0) => {
 };
 
 const scheduleDrain = () => {
-  if (drainTimer) return;
-  drainTimer = setTimeout(drain, 0);
-  drainTimer.unref?.();
+  if (drainTimeout) return;
+  drainTimeout = setTimeout(drain, 0);
+  drainTimeout.unref?.();
 };
 
 const drain = async () => {
-  drainTimer = null;
+  drainTimeout = null;
   if (draining) {
     scheduleDrain();
     return;
@@ -93,19 +94,22 @@ const drain = async () => {
 
 /** Periodic sweep, mainly so retries scheduled with a delay get picked up. */
 const start = () => {
-  if (drainTimer) return;
-  drainTimer = setInterval(() => {
+  if (sweepTimer) return;
+  sweepTimer = setInterval(() => {
     if (queue.length && !draining) scheduleDrain();
   }, DRAIN_INTERVAL_MS);
-  drainTimer.unref?.();
+  sweepTimer.unref?.();
   console.log('[emailQueue] Started');
 };
 
 const stop = () => {
-  if (drainTimer) {
-    clearInterval(drainTimer);
-    clearInterval(drainTimer);
-    drainTimer = null;
+  if (sweepTimer) {
+    clearInterval(sweepTimer);
+    sweepTimer = null;
+  }
+  if (drainTimeout) {
+    clearTimeout(drainTimeout);
+    drainTimeout = null;
   }
   queue = [];
 };
