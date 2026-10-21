@@ -122,6 +122,7 @@ export const normalizeDrive = (drive: any): PlacementDrive => ({
   deadlineDate: drive?.deadlineDate || '',
   eligibility: {
     allowedBranches: normalizeArray(drive?.eligibility?.allowedBranches),
+    allowedGenders: normalizeArray(drive?.eligibility?.allowedGenders),
     minCgpa: Number(drive?.eligibility?.minCgpa || 0),
     minTenthPercentage: Number(drive?.eligibility?.minTenthPercentage || 0),
     minTwelfthPercentage: Number(drive?.eligibility?.minTwelfthPercentage || 0),

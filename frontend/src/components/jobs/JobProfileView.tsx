@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Search,
   CheckCircle2,
@@ -57,11 +57,26 @@ export const JobProfileView: React.FC = () => {
     activeStudent?.resumes?.find((r) => r.isPrimary)?.id || activeStudent?.resumes?.[0]?.id || ''
   );
 
+  // Drives the viewer is allowed to see at all. A gender-restricted drive is
+  // only visible to students of that gender; placement operators see every drive.
+  const genderVisibleDrives = useMemo(
+    () =>
+      isPlacementOperator
+        ? drives
+        : drives.filter((drive) => {
+            const allowedGenders = drive.eligibility?.allowedGenders || [];
+            if (!allowedGenders.length) return true;
+            if (!activeStudent?.gender) return false;
+            return allowedGenders.includes(activeStudent.gender);
+          }),
+    [drives, isPlacementOperator, activeStudent?.gender]
+  );
+
   useEffect(() => {
-    if (!selectedDriveId && drives[0]?.id) {
-      setSelectedDriveId(drives[0].id);
+    if (!selectedDriveId && genderVisibleDrives[0]?.id) {
+      setSelectedDriveId(genderVisibleDrives[0].id);
     }
-  }, [drives, selectedDriveId]);
+  }, [genderVisibleDrives, selectedDriveId]);
 
   useEffect(() => {
     const nextResumeId = activeStudent.resumes?.find((r) => r.isPrimary)?.id || activeStudent.resumes?.[0]?.id || '';
@@ -80,7 +95,7 @@ export const JobProfileView: React.FC = () => {
     return <div className="p-8 text-center text-gray-500">Loading jobs...</div>;
   }
 
-  const filteredDrives = drives.filter((drive) => {
+  const filteredDrives = genderVisibleDrives.filter((drive) => {
     if (activeTabKey === 'applied') {
       const isApplied = applications.some(
         (a) => a.driveId === drive.id && a.studentId === studentId
@@ -106,7 +121,7 @@ export const JobProfileView: React.FC = () => {
     return new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime();
   });
 
-  const selectedDrive = drives.find((d) => d.id === selectedDriveId) || drives[0];
+  const selectedDrive = genderVisibleDrives.find((d) => d.id === selectedDriveId) || genderVisibleDrives[0];
 
   const clearFilters = () => {
     setSectorFilter('all');
@@ -174,6 +189,9 @@ const exportData = (type: 'all' | 'shortlisted') => {
   };
 
   const checkStudentEligibility = (drive: PlacementDrive) => {
+    const driveGenders = drive.eligibility?.allowedGenders || [];
+    const genderLabel = driveGenders.length ? `${driveGenders.join(', ')} only` : 'Open to all genders';
+
     if (isPlacementOperator) {
       return {
         eligible: true,
@@ -182,6 +200,11 @@ const exportData = (type: 'all' | 'shortlisted') => {
             title: 'Course & Branch Eligibility',
             satisfied: true,
             details: `Allowed Branches: ${drive.eligibility.allowedBranches.join(', ')}`,
+          },
+          {
+            title: 'Gender Preference',
+            satisfied: true,
+            details: `Gender Preference: ${genderLabel}`,
           },
           {
             title: 'Academic CGPA Criteria',
@@ -207,6 +230,18 @@ const exportData = (type: 'all' | 'shortlisted') => {
       details: branchMatched
         ? `Eligible for student branch (${activeStudent.branch})`
         : `Drive restricted to: ${drive.eligibility.allowedBranches.join(', ')}`,
+    });
+    const genderMatched =
+      driveGenders.length === 0 ||
+      (!!activeStudent.gender && driveGenders.includes(activeStudent.gender));
+    reasons.push({
+      title: 'Gender Preference',
+      satisfied: genderMatched,
+      details: driveGenders.length === 0
+        ? 'This drive is open to students of every gender.'
+        : genderMatched
+        ? `Your gender (${activeStudent.gender}) matches this drive.`
+        : `This drive is open only to ${driveGenders.join(', ')} candidates.`,
     });
     const cgpaMatched = (activeStudent.education?.graduation?.cgpa || 0) >= drive.eligibility.minCgpa;
     reasons.push({
@@ -347,7 +382,7 @@ const exportData = (type: 'all' | 'shortlisted') => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              All Jobs ({drives.length})
+              All Jobs ({genderVisibleDrives.length})
             </button>
             {showAppliedJobsTab ? (
               <button
@@ -431,6 +466,14 @@ const exportData = (type: 'all' | 'shortlisted') => {
                           {drive.companyName} <span className="text-gray-300">·</span> {drive.location}
                         </div>
 
+                        {(drive.eligibility?.allowedGenders || []).length > 0 && (
+                          <div className="mt-1.5">
+                            <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                              {drive.eligibility.allowedGenders.join(', ')} Only
+                            </span>
+                          </div>
+                        )}
+
                         <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-gray-100 text-[11px] text-gray-500">
                           <span className="flex items-center gap-1">
                             <Clock size={12} />
@@ -471,6 +514,11 @@ const exportData = (type: 'all' | 'shortlisted') => {
                       <span>{selectedDrive.positionType}</span>
                       <span className="text-gray-300">|</span>
                       <span className="flex items-center gap-1"><MapPin size={12}/>{selectedDrive.location}</span>
+                      {(selectedDrive.eligibility?.allowedGenders || []).length > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                          {selectedDrive.eligibility.allowedGenders.join(', ')} Only
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -799,6 +847,7 @@ const exportData = (type: 'all' | 'shortlisted') => {
                       </div>
 
                       <div className="mt-5 p-4 bg-gray-50 rounded-lg border border-gray-200 text-[12px] text-gray-600 space-y-1.5">
+                        <div>• <strong className="font-medium text-gray-800">Gender Preference:</strong> {(selectedDrive.eligibility?.allowedGenders || []).length ? `${selectedDrive.eligibility.allowedGenders.join(', ')} only` : 'Open to all genders'}</div>
                         <div>• <strong className="font-medium text-gray-800">Allowed Student Categories:</strong> General, OBC, SC, ST, EWS</div>
                         <div>• <strong className="font-medium text-gray-800">Max Education Gap:</strong> {selectedDrive.eligibility.maxGapYears} year allowed</div>
                         <div>• <strong className="font-medium text-gray-800">Existing Offers Policy:</strong> Unlimited offers allowed in Core Companies category</div>

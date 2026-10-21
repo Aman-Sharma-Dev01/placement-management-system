@@ -131,6 +131,8 @@ export interface HiringStage {
 
 export interface EligibilityRules {
   allowedBranches: string[];
+  /** Empty = open to every gender. Otherwise only these genders see the drive. */
+  allowedGenders: string[];
   minCgpa: number;
   minTenthPercentage: number;
   minTwelfthPercentage: number;

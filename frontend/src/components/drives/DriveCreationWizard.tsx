@@ -58,6 +58,7 @@ export const DriveCreationWizard: React.FC = () => {
     maxActiveBacklogs: '0',
     maxHistoryBacklogs: '1',
     maxGapYears: '1',
+    genderRestriction: 'Any',
     eligibility: {} as any,
   });
   const [allowedBranches, setAllowedBranches] = useState<string[]>([
@@ -196,6 +197,8 @@ export const DriveCreationWizard: React.FC = () => {
         deadlineDate: formValues.deadlineDate || '2026-08-15',
         eligibility: {
           allowedBranches: allowedBranches,
+          allowedGenders:
+            formValues.genderRestriction === 'Any' ? [] : [formValues.genderRestriction],
           minCgpa: parseFloat(formValues.minCgpa) || 6.5,
           minTenthPercentage: parseFloat(formValues.minTenthPercentage) || 60,
           minTwelfthPercentage: parseFloat(formValues.minTwelfthPercentage) || 60,
@@ -570,6 +573,35 @@ export const DriveCreationWizard: React.FC = () => {
             </div>
 
             <div>
+              <label className="block text-[12px] font-medium text-gray-700 mb-2">
+                Gender Preference
+              </label>
+              <div className="flex flex-wrap gap-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                {[
+                  { value: 'Any', label: 'Any Gender' },
+                  { value: 'Male', label: 'Male Only' },
+                  { value: 'Female', label: 'Female Only' },
+                  { value: 'Other', label: 'Other Only' },
+                ].map(option => (
+                  <label key={option.value} className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="genderRestriction"
+                      value={option.value}
+                      checked={formValues.genderRestriction === option.value}
+                      onChange={handleInputChange}
+                      className="w-3.5 h-3.5 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                    />
+                    <span className="text-[12px] text-gray-800">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                A gender-restricted drive is only visible to the students of that gender.
+              </p>
+            </div>
+
+            <div>
               <label className="block text-[12px] font-medium text-gray-700 mb-2">Eligible Batch Years</label>
               <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
                 {(() => {
@@ -858,6 +890,14 @@ export const DriveCreationWizard: React.FC = () => {
                 <div>
                   <span className="text-[11px] text-gray-500 block mb-0.5 font-medium uppercase tracking-wider">Min CGPA Required</span>
                   <span className="font-semibold text-gray-900 text-[13px]">{formValues.minCgpa}</span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-gray-500 block mb-0.5 font-medium uppercase tracking-wider">Gender Preference</span>
+                  <span className="font-semibold text-gray-900 text-[13px]">
+                    {formValues.genderRestriction === 'Any'
+                      ? 'Any Gender'
+                      : `${formValues.genderRestriction} Only`}
+                  </span>
                 </div>
               </div>
             </div>

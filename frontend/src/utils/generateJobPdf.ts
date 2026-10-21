@@ -184,6 +184,7 @@ export function generateJobDescriptionPdf(drive: PlacementDrive) {
     y = sectionHeader(doc, '04  Eligibility Criteria', y, pageWidth);
     const eligRows: [string, string][] = [
       ['Allowed Branches',     (elig.allowedBranches || []).join(', ') || '-'],
+      ['Gender Preference',    (elig.allowedGenders || []).join(', ') || 'Any Gender'],
       ['Minimum CGPA',         elig.minCgpa ? String(elig.minCgpa) : '-'],
       ['10th % Required',      elig.minTenthPercentage ? `>= ${elig.minTenthPercentage}%` : '-'],
       ['12th % Required',      elig.minTwelfthPercentage ? `>= ${elig.minTwelfthPercentage}%` : '-'],

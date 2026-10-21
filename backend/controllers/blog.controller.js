@@ -1,11 +1,43 @@
 const Blog = require('../models/Blog');
+const PlacementDrive = require('../models/PlacementDrive');
+const Student = require('../models/Student');
 
 // @desc    Get all blogs
 // @route   GET /api/blogs
 // @access  Private
 const getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const query = {};
+
+    // The announcement of a gender-restricted drive must not reach students
+    // of another gender.
+    if (req.user.role === 'student') {
+      const student = await Student.findOne({ userId: req.user._id })
+        .select('gender')
+        .lean();
+      const gender = student?.gender || null;
+
+      const restrictedDrives = await PlacementDrive.find({
+        'eligibility.allowedGenders': { $exists: true, $ne: [] },
+      })
+        .select('_id eligibility.allowedGenders')
+        .lean();
+
+      const hiddenDriveIds = restrictedDrives
+        .filter((drive) => {
+          const allowed = drive.eligibility?.allowedGenders || [];
+          if (!allowed.length) return false;
+          if (!gender) return true;
+          return !allowed.includes(gender);
+        })
+        .map((drive) => drive._id);
+
+      if (hiddenDriveIds.length) {
+        query.relatedDriveId = { $nin: hiddenDriveIds };
+      }
+    }
+
+    const blogs = await Blog.find(query).sort({ createdAt: -1 });
     res.json(blogs);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,8 +1,30 @@
 const PlacementDrive = require('../models/PlacementDrive');
 const Company = require('../models/Company');
 const Blog = require('../models/Blog');
+const Student = require('../models/Student');
 const eligibilityService = require('../services/eligibilityService');
 const notificationService = require('../services/notificationService');
+
+const VALID_GENDERS = ['Male', 'Female', 'Other'];
+
+/**
+ * Keeps only the genders the platform knows about, de-duplicated. An empty
+ * result means "open to every gender".
+ */
+const sanitizeGenders = (value) => {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((g) => VALID_GENDERS.includes(g)))];
+};
+
+/**
+ * Resolves the gender of the logged-in student. Returns null for anyone who
+ * is not a student, and for students whose profile has no gender on file.
+ */
+const resolveStudentGender = async (user) => {
+  if (!user || user.role !== 'student') return null;
+  const student = await Student.findOne({ userId: user._id }).select('gender').lean();
+  return student?.gender || null;
+};
 
 // @desc    Get all placement drives (with filtering)
 // @route   GET /api/drives
@@ -22,6 +44,12 @@ const getDrives = async (req, res) => {
     if (sector) query.sector = sector;
     if (positionType) query.positionType = positionType;
     if (status) query.status = status;
+
+    // Students only see the drives their gender is allowed to apply to.
+    if (req.user.role === 'student') {
+      const gender = await resolveStudentGender(req.user);
+      query.$and = [...(query.$and || []), eligibilityService.genderVisibilityFilter(gender)];
+    }
 
     let sortOption = { createdAt: -1 };
     if (sortBy === 'ctc_high') sortOption = { ctcLpa: -1 };
@@ -45,6 +73,18 @@ const getDriveById = async (req, res) => {
     if (!drive) {
       return res.status(404).json({ message: 'Drive not found' });
     }
+
+    // A gender-restricted drive is invisible to students of other genders.
+    if (req.user.role === 'student') {
+      const gender = await resolveStudentGender(req.user);
+      const allowed = Array.isArray(drive.eligibility?.allowedGenders)
+        ? drive.eligibility.allowedGenders
+        : [];
+      if (allowed.length && (!gender || !allowed.includes(gender))) {
+        return res.status(404).json({ message: 'Drive not found' });
+      }
+    }
+
     res.json(drive);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -94,6 +134,10 @@ const createDrive = async (req, res) => {
 
     const drive = await PlacementDrive.create({
       ...driveData,
+      eligibility: {
+        ...(driveData.eligibility || {}),
+        allowedGenders: sanitizeGenders(driveData.eligibility?.allowedGenders),
+      },
       companyId: company._id,
       totalAppliedCount: 0,
       shortlistedCount: 0,
@@ -101,9 +145,13 @@ const createDrive = async (req, res) => {
     });
 
     // Create a blog/announcement for this drive
+    const genderNote = drive.eligibility?.allowedGenders?.length
+      ? `\nGender Preference: ${drive.eligibility.allowedGenders.join(', ')} only`
+      : '';
+
     await Blog.create({
       title: `New Placement Drive: ${drive.companyName} (${drive.jobTitle})`,
-      content: `${drive.companyName} is visiting for the ${drive.jobTitle} role.\nCTC Offered: ${drive.ctcLpa} LPA\nDeadline to apply: ${drive.deadlineDate || 'TBA'}\nCheck the job profile for more details and apply before the deadline.`,
+      content: `${drive.companyName} is visiting for the ${drive.jobTitle} role.\nCTC Offered: ${drive.ctcLpa} LPA${genderNote}\nDeadline to apply: ${drive.deadlineDate || 'TBA'}\nCheck the job profile for more details and apply before the deadline.`,
       authorId: req.user.id,
       authorName: req.user.name || 'Placement Cell',
       relatedDriveId: drive._id,
@@ -170,6 +218,7 @@ const ELIGIBILITY_LABELS = {
   maxHistoryBacklogs: 'Max history backlogs',
   maxGapYears: 'Max gap years',
   allowedBatchYears: 'Allowed batches',
+  allowedGenders: 'Gender preference',
 };
 
 const sameValue = (a, b) => String(a ?? '') === String(b ?? '');
@@ -185,9 +234,18 @@ const updateDrive = async (req, res) => {
       return res.status(404).json({ message: 'Drive not found' });
     }
 
+    // Normalise the gender allow-list before it reaches the schema.
+    const updatePayload = { ...req.body };
+    if (updatePayload.eligibility?.allowedGenders !== undefined) {
+      updatePayload.eligibility = {
+        ...updatePayload.eligibility,
+        allowedGenders: sanitizeGenders(updatePayload.eligibility.allowedGenders),
+      };
+    }
+
     const drive = await PlacementDrive.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: updatePayload },
       { new: true, runValidators: true }
     );
 
@@ -210,11 +268,11 @@ const updateDrive = async (req, res) => {
         });
 
         // Eligibility rule edits matter as much as the headline fields.
-        if (req.body.eligibility) {
+        if (updatePayload.eligibility) {
           Object.entries(ELIGIBILITY_LABELS).forEach(([key, label]) => {
             const from = before.eligibility?.[key];
             const to = drive.eligibility?.[key];
-            if (req.body.eligibility[key] !== undefined && !sameValue(from, to)) {
+            if (updatePayload.eligibility[key] !== undefined && !sameValue(from, to)) {
               changes.push({ label, before: from, after: to });
             }
           });
@@ -261,7 +319,7 @@ const updateDrive = async (req, res) => {
         await notificationService.driveUpdated({ drive, changes, applicants, newlyEligible });
 
         // Eligibility edits can change the headline count.
-        if (req.body.eligibility) {
+        if (updatePayload.eligibility) {
           await eligibilityService.refreshEligibleCount(drive);
         }
 
@@ -299,4 +357,11 @@ const deleteDrive = async (req, res) => {
   }
 };
 
-module.exports = { getDrives, getDriveById, createDrive, updateDrive, deleteDrive };
+module.exports = {
+  getDrives,
+  getDriveById,
+  createDrive,
+  updateDrive,
+  deleteDrive,
+  sanitizeGenders,
+};

@@ -26,6 +26,8 @@ const hiringStageSchema = new mongoose.Schema(
 const eligibilityRulesSchema = new mongoose.Schema(
   {
     allowedBranches: { type: [String], default: [] },
+    // Empty = open to every gender. Otherwise only the listed genders see it.
+    allowedGenders: { type: [String], enum: ['Male', 'Female', 'Other'], default: [] },
     minCgpa: { type: Number, default: 0 },
     minTenthPercentage: { type: Number, default: 0 },
     minTwelfthPercentage: { type: Number, default: 0 },

@@ -21,6 +21,7 @@ const student = (overrides = {}) => ({
   name: 'Test Student',
   email: 'test@example.edu.in',
   branch: 'CSE',
+  gender: 'Male',
   education: {
     tenth: { percentage: 85 },
     twelfthOrDiploma: 'twelfth',
@@ -37,6 +38,7 @@ const drive = (eligibility = {}, extra = {}) => ({
   ...extra,
   eligibility: {
     allowedBranches: [],
+    allowedGenders: [],
     minCgpa: 0,
     minTenthPercentage: 0,
     minTwelfthPercentage: 0,
@@ -143,6 +145,31 @@ test('evaluate: every failed rule is reported, not just the first', () => {
 
   assert.equal(result.eligible, false);
   assert.equal(result.reasons.length, 6);
+});
+
+test('evaluate: gender-restricted drives only match students of that gender', () => {
+  // An empty allow-list means the drive is open to everybody.
+  assert.equal(evaluate(student(), drive({ allowedGenders: [] })).eligible, true);
+
+  // Female-only drive: a female student matches, a male student does not.
+  assert.equal(evaluate(student({ gender: 'Female' }), drive({ allowedGenders: ['Female'] })).eligible, true);
+
+  const rejected = evaluate(student({ gender: 'Male' }), drive({ allowedGenders: ['Female'] }));
+  assert.equal(rejected.eligible, false);
+  assert.match(rejected.reasons[0], /Female/);
+});
+
+test('evaluate: a male-only drive rejects other genders', () => {
+  assert.equal(evaluate(student({ gender: 'Male' }), drive({ allowedGenders: ['Male'] })).eligible, true);
+  assert.equal(evaluate(student({ gender: 'Female' }), drive({ allowedGenders: ['Male'] })).eligible, false);
+  assert.equal(evaluate(student({ gender: 'Other' }), drive({ allowedGenders: ['Male'] })).eligible, false);
+});
+
+test('evaluate: a student without a gender cannot match a restricted drive', () => {
+  const noGender = student({ gender: undefined });
+  const result = evaluate(noGender, drive({ allowedGenders: ['Female'] }));
+  assert.equal(result.eligible, false);
+  assert.match(result.reasons[0], /gender is not set/i);
 });
 
 test('evaluate: dangling allowedCategories is ignored (student category removed)', () => {

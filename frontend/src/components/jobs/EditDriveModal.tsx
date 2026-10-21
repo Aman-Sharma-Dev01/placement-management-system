@@ -22,6 +22,7 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
     workMode: drive.workMode,
     minCgpa: drive.eligibility.minCgpa.toString(),
     maxActiveBacklogs: drive.eligibility.maxActiveBacklogs.toString(),
+    genderRestriction: drive.eligibility.allowedGenders?.[0] || 'Any',
   });
 
   const [thirdPartyLinks, setThirdPartyLinks] = useState<{ label: string; url: string }[]>(
@@ -66,6 +67,8 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
           ...drive.eligibility,
           minCgpa: parseFloat(formData.minCgpa),
           maxActiveBacklogs: parseInt(formData.maxActiveBacklogs),
+          allowedGenders:
+            formData.genderRestriction === 'Any' ? [] : [formData.genderRestriction],
         }
       };
       await drivesApi.update(drive.id, payload);
@@ -162,6 +165,16 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
                   <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Max Active Backlogs</label>
                   <input type="number" name="maxActiveBacklogs" value={formData.maxActiveBacklogs} onChange={handleChange} required
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Gender Preference</label>
+                  <select name="genderRestriction" value={formData.genderRestriction} onChange={handleChange}
+                    className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none">
+                    <option value="Any">Any Gender</option>
+                    <option value="Male">Male Only</option>
+                    <option value="Female">Female Only</option>
+                    <option value="Other">Other Only</option>
+                  </select>
                 </div>
               </div>
             </div>

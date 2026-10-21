@@ -84,7 +84,11 @@ const applyToDrive = async (req, res) => {
     const { eligible, reasons } = eligibilityService.evaluate(student, drive);
     if (!eligible) {
       return res.status(403).json({
-        message: 'You are not eligible for this drive',
+        // The reason is included so the student knows *why* — e.g. that the
+        // drive is restricted to a different gender.
+        message: reasons.length
+          ? `You are not eligible for this drive: ${reasons[0]}`
+          : 'You are not eligible for this drive',
         reasons,
       });
     }

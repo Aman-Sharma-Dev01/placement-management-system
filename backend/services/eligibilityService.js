@@ -48,6 +48,22 @@ const evaluate = (student, drive) => {
     }
   }
 
+  // --- Gender ------------------------------------------------------------
+  // An empty allow-list means the drive is open to every gender. Otherwise
+  // only the listed genders (e.g. a "female only" hiring drive) match.
+  const allowedGenders = Array.isArray(rules.allowedGenders) ? rules.allowedGenders : [];
+  if (allowedGenders.length) {
+    if (student.gender && allowedGenders.includes(student.gender)) {
+      summary.push(`Gender: ${student.gender}`);
+    } else {
+      reasons.push(
+        student.gender
+          ? `This drive is open only to ${allowedGenders.join(', ')} candidates`
+          : `Your gender is not set on your profile, so you cannot be matched against this drive`
+      );
+    }
+  }
+
   // --- Batch / admission year --------------------------------------------
   const allowedBatches = Array.isArray(rules.allowedBatchYears)
     ? rules.allowedBatchYears
@@ -159,7 +175,7 @@ const evaluate = (student, drive) => {
  */
 const findEligibleStudents = async (drive, { excludeApplied = false } = {}) => {
   const students = await Student.find({}).select(
-    'userId name email branch rollNo supersetId verificationStatus education appliedDriveIds batchYear'
+    'userId name email branch rollNo supersetId verificationStatus education appliedDriveIds batchYear gender'
   );
 
   const eligible = students.filter((student) => evaluate(student, drive).eligible);
@@ -216,10 +232,32 @@ const refreshEligibleCount = async (drive) => {
   }
 };
 
+/**
+ * The Mongo condition that selects the drives a student is allowed to see.
+ *
+ * A drive restricted to a gender (e.g. a female-only hiring drive) is only
+ * visible to students of that gender. An empty or missing allow-list means the
+ * drive is open to everybody — that includes drives created before the gender
+ * rule existed, which have no allow-list at all.
+ */
+const genderVisibilityFilter = (gender) => {
+  const openToEverybody = [
+    { 'eligibility.allowedGenders': { $exists: false } },
+    { 'eligibility.allowedGenders': { $size: 0 } },
+  ];
+
+  if (!gender) return { $or: openToEverybody };
+
+  return {
+    $or: [...openToEverybody, { 'eligibility.allowedGenders': gender }],
+  };
+};
+
 module.exports = {
   evaluate,
   findEligibleStudents,
   findEligibleStudentsNotApplied,
   findApplicants,
   refreshEligibleCount,
+  genderVisibilityFilter,
 };

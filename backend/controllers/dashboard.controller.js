@@ -2,6 +2,7 @@ const Student = require('../models/Student');
 const PlacementDrive = require('../models/PlacementDrive');
 const Application = require('../models/Application');
 const Company = require('../models/Company');
+const eligibilityService = require('../services/eligibilityService');
 
 // @desc    Get aggregated dashboard stats
 // @route   GET /api/dashboard/stats
@@ -50,17 +51,13 @@ const getDashboardStats = async (req, res) => {
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ]);
 
-    // Recent drives
-    const recentDrives = await PlacementDrive.find()
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select('companyName jobTitle ctcLpa status positionType companyLogo deadlineDate');
-
     // If role is student, include student-specific stats
     let studentStats = null;
+    let studentGender = null;
     if (req.user.role === 'student') {
       const student = await Student.findOne({ userId: req.user._id });
       if (student) {
+        studentGender = student.gender || null;
         const myApplications = await Application.find({ studentId: student._id });
         const myOffers = myApplications.filter((a) => a.status === 'offered').length;
         studentStats = {
@@ -74,6 +71,21 @@ const getDashboardStats = async (req, res) => {
         };
       }
     }
+
+    // Recent drives. A gender-restricted drive is only shown to students of
+    // that gender.
+    const recentDriveQuery = {};
+    if (req.user.role === 'student') {
+      Object.assign(
+        recentDriveQuery,
+        eligibilityService.genderVisibilityFilter(studentGender)
+      );
+    }
+
+    const recentDrives = await PlacementDrive.find(recentDriveQuery)
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('companyName jobTitle ctcLpa status positionType companyLogo deadlineDate');
 
     res.json({
       totalStudents,
