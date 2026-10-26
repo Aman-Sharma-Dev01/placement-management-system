@@ -16,6 +16,7 @@ import { OnboardingPage } from './components/auth/OnboardingPage';
 import { ResetPasswordPage } from './components/auth/ResetPasswordPage';
 import { BlogsManager } from './components/blogs/BlogsManager';
 import { StudentBlogsFeed } from './components/blogs/StudentBlogsFeed';
+import { BatchManagement } from './components/batches/BatchManagement';
 import  LandingPage  from './components/landing/LandingPage';
 
 const MainContent: React.FC = () => {
@@ -24,8 +25,8 @@ const MainContent: React.FC = () => {
   const allowedTabsByRole: Record<string, string[]> = {
     student: ['dashboard', 'student_dashboard', 'jobs', 'student_profile', 'applications'],
     placement_coordinator: ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics', 'blogs'],
-    placement_cell: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create', 'blogs'],
-    super_admin: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create', 'blogs'],
+    placement_cell: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create', 'blogs', 'batches'],
+    super_admin: ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create', 'blogs', 'batches'],
   };
 
   const allowedTabs = allowedTabsByRole[role] || allowedTabsByRole.student;
@@ -55,6 +56,8 @@ const MainContent: React.FC = () => {
       return <SettingsView />;
     case 'blogs':
       return <BlogsManager />;
+    case 'batches':
+      return <BatchManagement />;
     default:
       return role === 'student' ? <StudentBlogsFeed /> : <OverviewDashboard />;
   }

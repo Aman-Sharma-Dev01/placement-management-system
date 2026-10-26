@@ -16,6 +16,7 @@ import {
   X,
   Plus,
   Sparkles,
+  GraduationCap,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole, NotificationItem, NotificationPriority } from '../../types';
@@ -104,8 +105,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // Define which tabs are allowed per role
   const studentAllowedTabs = ['dashboard', 'student_dashboard', 'jobs', 'student_profile', 'applications', 'blogs'];
   const coordinatorAllowedTabs = ['dashboard', 'student_profile', 'students_directory', 'applications', 'analytics', 'blogs'];
-  const cellAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create', 'blogs'];
-  const adminAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create', 'blogs'];
+  const cellAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'drive_create', 'blogs', 'batches'];
+  const adminAllowedTabs = ['dashboard', 'jobs', 'student_profile', 'students_directory', 'drives', 'applications', 'companies', 'analytics', 'settings', 'drive_create', 'blogs', 'batches'];
 
   const allowedTabs =
     role === 'student'
@@ -129,6 +130,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { key: 'jobs', icon: <Briefcase size={16} />, label: 'Job Profiles', roles: ['student', 'placement_cell', 'super_admin'] },
     { key: 'student_profile', icon: <User size={16} />, label: 'My Profile', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'students_directory', icon: <ShieldCheck size={16} />, label: 'Student Verification & Progress', roles: ['placement_coordinator', 'placement_cell', 'super_admin'] },
+    { key: 'batches', icon: <GraduationCap size={16} />, label: 'Batch Management', roles: ['placement_cell', 'super_admin'] },
     { key: 'drives', icon: <Calendar size={16} />, label: 'Placement Drives', roles: ['placement_cell', 'super_admin'] },
     { key: 'applications', icon: <FileText size={16} />, label: role === 'student' ? 'My Applications' : 'Applications & Stages', roles: ['student', 'placement_coordinator', 'placement_cell', 'super_admin'] },
     { key: 'companies', icon: <Building size={16} />, label: 'Company & Partner Management', roles: ['placement_cell', 'super_admin'] },
@@ -146,6 +148,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     student_profile: 'Student Profile',
     students_directory: 'Student Registry',
     drives: 'Placement Drives',
+    batches: 'Batch Management',
     applications: 'Applications Tracker',
     companies: 'Companies & Partners',
     analytics: 'Analytics & Reports',

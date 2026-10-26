@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2,
   Briefcase,
@@ -11,16 +11,30 @@ import {
   Info,
   Upload,
   File,
-  X
+  X,
+  GraduationCap,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PlacementDrive, HiringStage, CompanyDocument } from '../../types';
 import { uploadApi } from '../../api/upload.api';
 import { toast } from '../../utils/toast';
+import { batchesApi, Batch } from '../../api/batches.api';
 
 export const DriveCreationWizard: React.FC = () => {
   const { createPlacementDrive, setActiveTab, role } = useApp();
   const [currentStep, setCurrentStep] = useState(0);
+  const [availableBatches, setAvailableBatches] = useState<Batch[]>([]);
+  const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    batchesApi.getAll().then(setAvailableBatches).catch(() => {});
+  }, []);
+
+  const toggleBatchSelection = (batchId: string) => {
+    setSelectedBatchIds((prev) =>
+      prev.includes(batchId) ? prev.filter((id) => id !== batchId) : [...prev, batchId]
+    );
+  };
 
   if (role !== 'placement_cell' && role !== 'super_admin') {
     return (
@@ -199,6 +213,8 @@ export const DriveCreationWizard: React.FC = () => {
           allowedBranches: allowedBranches,
           allowedGenders:
             formValues.genderRestriction === 'Any' ? [] : [formValues.genderRestriction],
+          allowedBatchYears: (formValues.eligibility?.allowedBatchYears || []).map(Number),
+          targetBatchIds: selectedBatchIds,
           minCgpa: parseFloat(formValues.minCgpa) || 6.5,
           minTenthPercentage: parseFloat(formValues.minTenthPercentage) || 60,
           minTwelfthPercentage: parseFloat(formValues.minTwelfthPercentage) || 60,
@@ -602,34 +618,40 @@ export const DriveCreationWizard: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-gray-700 mb-2">Eligible Batch Years</label>
-              <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                {(() => {
-                  const current = new Date().getFullYear();
-                  return Array.from({ length: 6 }).map((_, idx) => {
-                    const y = current + 4 - idx;
-                    return (
-                      <label key={y} className="flex items-center gap-1.5 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={(formValues.eligibility?.allowedBatchYears || []).includes(y)}
-                          onChange={() => {
-                            const existing = formValues.eligibility?.allowedBatchYears || [];
-                            const updated = existing.includes(y) ? existing.filter(v => v !== y) : [...existing, y];
-                            setFormValues({
-                              ...formValues,
-                              eligibility: { ...formValues.eligibility, allowedBatchYears: updated }
-                            });
-                          }}
-                          className="w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-                        />
-                        <span className="text-[12px] text-gray-800">{y}</span>
-                      </label>
-                    );
-                  });
-                })()}
-              </div>
-              <p className="mt-1.5 text-[11px] text-gray-500">Leave empty to allow all batches.</p>
+              <label className="block text-[12px] font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                <GraduationCap size={14} className="text-emerald-600" />
+                Target Batches <span className="text-red-500">*</span>
+              </label>
+              {availableBatches.length === 0 ? (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-md text-[12px] text-amber-700 flex items-center gap-2">
+                  <Info size={14} className="shrink-0" />
+                  No batches created yet. Go to <strong>Batch Management</strong> to create a batch first before assigning drives to it.
+                </div>
+              ) : (
+                <div className="space-y-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                  {availableBatches.map((batch) => (
+                    <label key={batch._id} className="flex items-center gap-2.5 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={selectedBatchIds.includes(batch._id)}
+                        onChange={() => toggleBatchSelection(batch._id)}
+                        className="w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12.5px] text-gray-800 font-medium">{batch.name}</span>
+                        <span className="text-[11px] text-gray-500">({batch.program} · Passing {batch.passingYear})</span>
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${batch.isEnrollmentOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {batch.isEnrollmentOpen ? 'Enrollment Open' : 'Closed'}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                Only students <strong>enrolled</strong> in the selected batch(es) will see this drive.
+                Leave empty to show to all students.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -897,6 +919,14 @@ export const DriveCreationWizard: React.FC = () => {
                     {formValues.genderRestriction === 'Any'
                       ? 'Any Gender'
                       : `${formValues.genderRestriction} Only`}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-gray-500 block mb-0.5 font-medium uppercase tracking-wider">Eligible Batch Years</span>
+                  <span className="font-semibold text-gray-900 text-[13px]">
+                    {(formValues.eligibility?.allowedBatchYears || []).length > 0
+                      ? (formValues.eligibility.allowedBatchYears as number[]).sort().join(', ')
+                      : 'All Batches'}
                   </span>
                 </div>
               </div>

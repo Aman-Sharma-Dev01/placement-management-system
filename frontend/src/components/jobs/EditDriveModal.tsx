@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlacementDrive } from '../../types';
-import { X, Trash2, Plus } from 'lucide-react';
+import { X, Trash2, Plus, GraduationCap, Info } from 'lucide-react';
 import { drivesApi } from '../../api/drives.api';
 import { toast } from '../../utils/toast';
+import { batchesApi, Batch } from '../../api/batches.api';
 
 interface EditDriveModalProps {
   drive: PlacementDrive;
@@ -24,6 +25,22 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
     maxActiveBacklogs: drive.eligibility.maxActiveBacklogs.toString(),
     genderRestriction: drive.eligibility.allowedGenders?.[0] || 'Any',
   });
+
+  // Batch selection — use targetBatchIds if present, otherwise fall back to empty
+  const [availableBatches, setAvailableBatches] = useState<Batch[]>([]);
+  const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>(
+    (drive.eligibility as any).targetBatchIds?.map((id: any) => id?.toString?.() ?? id) || []
+  );
+
+  useEffect(() => {
+    batchesApi.getAll().then(setAvailableBatches).catch(() => {});
+  }, []);
+
+  const toggleBatch = (batchId: string) => {
+    setSelectedBatchIds((prev) =>
+      prev.includes(batchId) ? prev.filter((id) => id !== batchId) : [...prev, batchId]
+    );
+  };
 
   const [thirdPartyLinks, setThirdPartyLinks] = useState<{ label: string; url: string }[]>(
     drive.thirdPartyLinks || []
@@ -69,7 +86,8 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
           maxActiveBacklogs: parseInt(formData.maxActiveBacklogs),
           allowedGenders:
             formData.genderRestriction === 'Any' ? [] : [formData.genderRestriction],
-        }
+          targetBatchIds: selectedBatchIds,
+        } as any,
       };
       await drivesApi.update(drive.id, payload);
       toast.success('Drive updated successfully');
@@ -132,7 +150,7 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
                   <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Work Mode</label>
                   <select name="workMode" value={formData.workMode} onChange={handleChange} required
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none">
-                    <option value="Onsite">Onsite</option>
+                    <option value="On-site">On-site</option>
                     <option value="Remote">Remote</option>
                     <option value="Hybrid">Hybrid</option>
                   </select>
@@ -143,8 +161,8 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Deadline Date</label>
-                  <input type="date" name="deadlineDate" value={formData.deadlineDate} onChange={handleChange} required
+                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Application Deadline</label>
+                  <input type="date" name="deadlineDate" value={formData.deadlineDate?.slice(0, 10)} onChange={handleChange} required
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none" />
                 </div>
               </div>
@@ -154,28 +172,61 @@ export const EditDriveModal: React.FC<EditDriveModalProps> = ({ drive, onClose, 
 
             {/* Eligibility */}
             <div className="space-y-3">
-              <h4 className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Eligibility Limits</h4>
+              <h4 className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Eligibility & Visibility</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Min CGPA Required</label>
-                  <input type="number" step="0.1" name="minCgpa" value={formData.minCgpa} onChange={handleChange} required
+                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Min CGPA</label>
+                  <input type="number" step="0.1" name="minCgpa" value={formData.minCgpa} onChange={handleChange}
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none" />
                 </div>
                 <div>
                   <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Max Active Backlogs</label>
-                  <input type="number" name="maxActiveBacklogs" value={formData.maxActiveBacklogs} onChange={handleChange} required
+                  <input type="number" name="maxActiveBacklogs" value={formData.maxActiveBacklogs} onChange={handleChange}
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Gender Preference</label>
+                  <label className="block text-[12.5px] font-medium text-gray-700 mb-1">Gender Restriction</label>
                   <select name="genderRestriction" value={formData.genderRestriction} onChange={handleChange}
                     className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-[13px] focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none">
-                    <option value="Any">Any Gender</option>
+                    <option value="Any">Any (No restriction)</option>
                     <option value="Male">Male Only</option>
                     <option value="Female">Female Only</option>
                     <option value="Other">Other Only</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Target Batches */}
+              <div>
+                <label className="block text-[12.5px] font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                  <GraduationCap size={13} className="text-emerald-600" />
+                  Target Batches
+                </label>
+                {availableBatches.length === 0 ? (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md text-[12px] text-amber-700 flex items-center gap-2">
+                    <Info size={13} className="shrink-0" />
+                    No batches created. Create batches in Batch Management first.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                    {availableBatches.map((batch) => (
+                      <label key={batch._id} className="flex items-center gap-2.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedBatchIds.includes(batch._id)}
+                          onChange={() => toggleBatch(batch._id)}
+                          className="w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                        />
+                        <span className="text-[12.5px] text-gray-800 font-medium">{batch.name}</span>
+                        <span className="text-[11px] text-gray-500">({batch.program} · Passing {batch.passingYear})</span>
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${batch.isEnrollmentOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {batch.isEnrollmentOpen ? 'Open' : 'Closed'}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-1 text-[11px] text-gray-500">Leave all unchecked to show drive to all students.</p>
               </div>
             </div>
 

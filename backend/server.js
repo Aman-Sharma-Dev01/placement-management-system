@@ -64,6 +64,7 @@ app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/blogs', require('./routes/blog.routes'));
+app.use('/api/batches', require('./routes/batch.routes'));
 
 // Health check. Reports email readiness so a deployment with missing SMTP
 // config is obvious instead of silently dropping notifications.

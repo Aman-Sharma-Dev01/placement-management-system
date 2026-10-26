@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   BookOpen,
@@ -16,12 +16,14 @@ import {
   Loader2,
   Trash2,
   Bell,
-  XCircle
+  XCircle,
+  GraduationCap,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { uploadApi } from '../../api/upload.api';
 import { toast } from '../../utils/toast';
 import { NotificationPreferencesCard } from './NotificationPreferencesCard';
+import { batchesApi, Batch } from '../../api/batches.api';
 
 export const StudentProfileView: React.FC = () => {
   const { activeStudent, updateStudentData, role, verifyStudentProfile } = useApp();
@@ -451,6 +453,29 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
     }
   };
 
+
+  // ─── Batch Enrollment ─────────────────────────────────────────────────────
+  const [availableBatches, setAvailableBatches] = React.useState<Batch[]>([]);
+  const [enrollingBatchId, setEnrollingBatchId] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    if (role === 'student') {
+      batchesApi.getAll().then(setAvailableBatches).catch(() => {});
+    }
+  }, [role]);
+
+  const handleEnrollBatch = async (batchId: string) => {
+    setEnrollingBatchId(batchId);
+    try {
+      await batchesApi.enroll(batchId);
+      toast.success('Successfully enrolled in placement batch!');
+      batchesApi.getAll().then(setAvailableBatches).catch(() => {});
+    } catch (err: any) {
+      toast.error(err.message || 'Enrollment failed');
+    } finally {
+      setEnrollingBatchId(null);
+    }
+  };
   const menuItems = [
     { id: 'basic', label: 'Basic Details', icon: <User size={16} /> },
     { id: 'education', label: 'Education Details', icon: <BookOpen size={16} /> },
@@ -459,6 +484,7 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
     { id: 'projects', label: 'Projects', icon: <Briefcase size={16} /> },
     { id: 'accomplishments', label: 'Accomplishments', icon: <Trophy size={16} /> },
     { id: 'resumes', label: 'Resumes & Documents', icon: <FileText size={16} /> },
+    ...(role === 'student' ? [{ id: 'batch_enrollment', label: 'Batch Enrollment', icon: <GraduationCap size={16} /> }] : []),
     { id: 'notifications', label: 'Email Notifications', icon: <Bell size={16} /> },
   ];
   const s = activeStudent;
@@ -1155,6 +1181,92 @@ const fileInputRef = React.useRef<HTMLInputElement>(null);
             </div>
           )}
 
+
+          {/* Section: Batch Enrollment */}
+          {activeSection === 'batch_enrollment' && role === 'student' && (
+            <div className="space-y-4">
+              <div className="border-b border-gray-200 pb-2">
+                <h3 className="m-0 text-[11.5px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
+                  <GraduationCap size={14} className="text-emerald-600" />
+                  Placement Batch Enrollment
+                </h3>
+              </div>
+
+              {(activeStudent as any).batchEnrollmentStatus === 'enrolled' ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                  <CheckCircle2 size={18} className="text-green-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-green-800 text-[13px]">You are enrolled in a placement batch</p>
+                    <p className="text-[12px] text-green-700 mt-1">You will see all drives associated with your enrolled batch.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle size={18} className="text-amber-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-amber-800 text-[13px]">Not enrolled in any batch</p>
+                    <p className="text-[12px] text-amber-700 mt-1">
+                      Enroll below to see placement drives.
+                      {activeStudent.verificationStatus !== 'verified' && (
+                        <span className="block mt-1 font-medium text-red-600">Your profile must be verified before you can enroll.</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-[12px] font-semibold text-gray-700 mb-3">
+                  Batches matching your passing year ({activeStudent.batchYear})
+                </h4>
+                {availableBatches.length === 0 ? (
+                  <p className="text-[12.5px] text-gray-400 italic">No batches available yet. Please check back later.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {availableBatches.filter((b) => b.passingYear === activeStudent.batchYear).map((batch) => (
+                      <div key={batch._id} className="border border-gray-200 rounded-lg p-4 flex items-center justify-between gap-4 bg-white">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <GraduationCap size={18} className="text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900 text-[13px]">{batch.name}</p>
+                            <p className="text-[11.5px] text-gray-500">{batch.program} · Admitted {batch.admissionYear} · Passing {batch.passingYear}</p>
+                            <span className={['text-[10px] font-semibold px-1.5 py-0.5 rounded inline-block mt-1', batch.isEnrollmentOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'].join(' ')}>
+                              {batch.isEnrollmentOpen ? 'Enrollment Open' : 'Enrollment Closed'}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          {(activeStudent as any).batchEnrollmentStatus === 'enrolled' ? (
+                            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-md border border-emerald-100">
+                              <CheckCircle2 size={13} /> Enrolled
+                            </span>
+                          ) : !batch.isEnrollmentOpen ? (
+                            <span className="text-[12px] text-gray-400 italic">Enrollment closed</span>
+                          ) : activeStudent.verificationStatus !== 'verified' ? (
+                            <span className="text-[12px] text-red-400 italic">Verify profile first</span>
+                          ) : (
+                            <button
+                              onClick={() => handleEnrollBatch(batch._id)}
+                              disabled={enrollingBatchId === batch._id}
+                              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors disabled:opacity-60"
+                            >
+                              {enrollingBatchId === batch._id ? <Loader2 size={13} className="animate-spin" /> : <GraduationCap size={13} />}
+                              {enrollingBatchId === batch._id ? 'Enrolling...' : 'Enroll Now'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {availableBatches.filter((b) => b.passingYear === activeStudent.batchYear).length === 0 && (
+                      <p className="text-[12.5px] text-gray-400 italic">No batch found for your passing year ({activeStudent.batchYear}). Contact the placement cell.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {/* Section: Email Notification Preferences */}
           {activeSection === 'notifications' && (
             <NotificationPreferencesCard />

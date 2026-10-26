@@ -65,12 +65,30 @@ const evaluate = (student, drive) => {
   }
 
   // --- Batch / admission year --------------------------------------------
+  // targetBatchIds takes priority when present; fall back to allowedBatchYears.
+  const targetBatchIds = Array.isArray(rules.targetBatchIds) ? rules.targetBatchIds : [];
   const allowedBatches = Array.isArray(rules.allowedBatchYears)
     ? rules.allowedBatchYears
     : Array.isArray(rules.allowedBatches)
     ? rules.allowedBatches
     : [];
-  if (allowedBatches.length) {
+
+  if (targetBatchIds.length) {
+    // Student must be enrolled in one of the target batches
+    const studentBatchId = student.enrolledBatchId?.toString();
+    const matches =
+      studentBatchId &&
+      targetBatchIds.some((id) => id.toString() === studentBatchId);
+    if (matches) {
+      summary.push(`Enrolled batch matched`);
+    } else {
+      reasons.push(
+        student.batchEnrollmentStatus !== 'enrolled'
+          ? 'You are not enrolled in a placement batch'
+          : 'Your enrolled batch is not eligible for this drive'
+      );
+    }
+  } else if (allowedBatches.length) {
     const studentBatch = numOrNull(student.batchYear);
     const matches = studentBatch !== null && allowedBatches.includes(studentBatch);
     if (matches) {
@@ -175,7 +193,7 @@ const evaluate = (student, drive) => {
  */
 const findEligibleStudents = async (drive, { excludeApplied = false } = {}) => {
   const students = await Student.find({}).select(
-    'userId name email branch rollNo supersetId verificationStatus education appliedDriveIds batchYear gender'
+    'userId name email branch rollNo supersetId verificationStatus education appliedDriveIds batchYear gender enrolledBatchId batchEnrollmentStatus'
   );
 
   const eligible = students.filter((student) => evaluate(student, drive).eligible);
@@ -233,7 +251,8 @@ const refreshEligibleCount = async (drive) => {
 };
 
 /**
- * The Mongo condition that selects the drives a student is allowed to see.
+ * The Mongo condition that selects the drives a student is allowed to see
+ * based on gender.
  *
  * A drive restricted to a gender (e.g. a female-only hiring drive) is only
  * visible to students of that gender. An empty or missing allow-list means the
@@ -253,6 +272,61 @@ const genderVisibilityFilter = (gender) => {
   };
 };
 
+/**
+ * The Mongo condition that selects the drives a student is allowed to see
+ * based on batch year.
+ *
+ * If a drive has a non-empty `allowedBatchYears` list, only students whose
+ * `batchYear` is in that list can see it. An empty or missing list means the
+ * drive is open to all batches.
+ */
+const batchYearVisibilityFilter = (batchYear) => {
+  const openToAllBatches = [
+    { 'eligibility.allowedBatchYears': { $exists: false } },
+    { 'eligibility.allowedBatchYears': { $size: 0 } },
+  ];
+
+  if (!batchYear) return { $or: openToAllBatches };
+
+  return {
+    $or: [...openToAllBatches, { 'eligibility.allowedBatchYears': batchYear }],
+  };
+};
+
+/**
+ * Combined batch visibility filter that handles both targetBatchIds (new)
+ * and allowedBatchYears (legacy).
+ *
+ * A drive is visible to a student when ANY of these is true:
+ *   1. The drive has no targetBatchIds AND no allowedBatchYears (open to all)
+ *   2. The drive has targetBatchIds and the student's enrolledBatchId matches
+ *   3. The drive has allowedBatchYears and the student's batchYear matches
+ */
+const batchEnrollmentVisibilityFilter = (batchYear, enrolledBatchId) => {
+  const noBatchRestriction = {
+    $and: [
+      { $or: [{ 'eligibility.targetBatchIds': { $exists: false } }, { 'eligibility.targetBatchIds': { $size: 0 } }] },
+      { $or: [{ 'eligibility.allowedBatchYears': { $exists: false } }, { 'eligibility.allowedBatchYears': { $size: 0 } }] },
+    ],
+  };
+
+  const conditions = [noBatchRestriction];
+
+  if (enrolledBatchId) {
+    conditions.push({ 'eligibility.targetBatchIds': enrolledBatchId });
+  }
+  if (batchYear) {
+    conditions.push({
+      $and: [
+        { $or: [{ 'eligibility.targetBatchIds': { $exists: false } }, { 'eligibility.targetBatchIds': { $size: 0 } }] },
+        { 'eligibility.allowedBatchYears': batchYear },
+      ],
+    });
+  }
+
+  return { $or: conditions };
+};
+
 module.exports = {
   evaluate,
   findEligibleStudents,
@@ -260,4 +334,7 @@ module.exports = {
   findApplicants,
   refreshEligibleCount,
   genderVisibilityFilter,
+  batchYearVisibilityFilter,
+  batchEnrollmentVisibilityFilter,
 };
+

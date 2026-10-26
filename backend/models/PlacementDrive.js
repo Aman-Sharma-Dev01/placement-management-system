@@ -34,7 +34,10 @@ const eligibilityRulesSchema = new mongoose.Schema(
     maxActiveBacklogs: { type: Number, default: 0 },
     maxHistoryBacklogs: { type: Number, default: 0 },
     maxGapYears: { type: Number, default: 0 },
+    // Legacy year-based filter (kept for backward compat)
     allowedBatchYears: { type: [Number], default: [] },
+    // Batch-document references — takes priority when non-empty
+    targetBatchIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Batch' }],
     allowedCategories: { type: [String], default: ['General', 'OBC', 'SC', 'ST', 'EWS'] },
     maxExistingOffers: { type: Number, default: 1 },
     offerCategoryRestriction: { type: String, default: '' },

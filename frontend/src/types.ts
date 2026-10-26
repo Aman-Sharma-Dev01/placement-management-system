@@ -133,6 +133,10 @@ export interface EligibilityRules {
   allowedBranches: string[];
   /** Empty = open to every gender. Otherwise only these genders see the drive. */
   allowedGenders: string[];
+  /** Empty = open to all batches. Otherwise only students from these batch years see the drive. */
+  allowedBatchYears: number[];
+  /** Batch document IDs — takes priority when non-empty. Only enrolled students of these batches see the drive. */
+  targetBatchIds?: string[];
   minCgpa: number;
   minTenthPercentage: number;
   minTwelfthPercentage: number;

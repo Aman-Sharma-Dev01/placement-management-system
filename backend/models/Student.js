@@ -17,6 +17,17 @@ const studentSchema = new mongoose.Schema(
     branch: { type: String, required: true },
     department: { type: String, default: '' },
     batchYear: { type: Number, required: true },
+    // Placement batch enrollment
+    enrolledBatchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Batch',
+      default: null,
+    },
+    batchEnrollmentStatus: {
+      type: String,
+      enum: ['not_enrolled', 'enrolled'],
+      default: 'not_enrolled',
+    },
     gender: {
       type: String,
       enum: ['Male', 'Female', 'Other'],

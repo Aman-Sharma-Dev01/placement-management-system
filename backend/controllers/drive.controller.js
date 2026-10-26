@@ -17,13 +17,17 @@ const sanitizeGenders = (value) => {
 };
 
 /**
- * Resolves the gender of the logged-in student. Returns null for anyone who
- * is not a student, and for students whose profile has no gender on file.
+ * Resolves the gender and batchYear of the logged-in student. Returns null
+ * fields for anyone who is not a student, or when the profile has no data.
  */
-const resolveStudentGender = async (user) => {
-  if (!user || user.role !== 'student') return null;
-  const student = await Student.findOne({ userId: user._id }).select('gender').lean();
-  return student?.gender || null;
+const resolveStudentProfile = async (user) => {
+  if (!user || user.role !== 'student') return { gender: null, batchYear: null, enrolledBatchId: null };
+  const student = await Student.findOne({ userId: user._id }).select('gender batchYear enrolledBatchId batchEnrollmentStatus').lean();
+  return {
+    gender: student?.gender || null,
+    batchYear: student?.batchYear || null,
+    enrolledBatchId: student?.enrolledBatchId || null,
+  };
 };
 
 // @desc    Get all placement drives (with filtering)
@@ -45,10 +49,14 @@ const getDrives = async (req, res) => {
     if (positionType) query.positionType = positionType;
     if (status) query.status = status;
 
-    // Students only see the drives their gender is allowed to apply to.
+    // Students only see the drives their gender and batch year are allowed for.
     if (req.user.role === 'student') {
-      const gender = await resolveStudentGender(req.user);
-      query.$and = [...(query.$and || []), eligibilityService.genderVisibilityFilter(gender)];
+      const { gender, batchYear, enrolledBatchId } = await resolveStudentProfile(req.user);
+      query.$and = [
+        ...(query.$and || []),
+        eligibilityService.genderVisibilityFilter(gender),
+        eligibilityService.batchEnrollmentVisibilityFilter(batchYear, enrolledBatchId),
+      ];
     }
 
     let sortOption = { createdAt: -1 };
@@ -74,14 +82,31 @@ const getDriveById = async (req, res) => {
       return res.status(404).json({ message: 'Drive not found' });
     }
 
-    // A gender-restricted drive is invisible to students of other genders.
+    // A gender or batch-restricted drive is invisible to students who don't match.
     if (req.user.role === 'student') {
-      const gender = await resolveStudentGender(req.user);
-      const allowed = Array.isArray(drive.eligibility?.allowedGenders)
+      const { gender, batchYear, enrolledBatchId } = await resolveStudentProfile(req.user);
+
+      const allowedGenders = Array.isArray(drive.eligibility?.allowedGenders)
         ? drive.eligibility.allowedGenders
         : [];
-      if (allowed.length && (!gender || !allowed.includes(gender))) {
+      if (allowedGenders.length && (!gender || !allowedGenders.includes(gender))) {
         return res.status(404).json({ message: 'Drive not found' });
+      }
+
+      const targetBatchIds = Array.isArray(drive.eligibility?.targetBatchIds)
+        ? drive.eligibility.targetBatchIds
+        : [];
+      const allowedBatchYears = Array.isArray(drive.eligibility?.allowedBatchYears)
+        ? drive.eligibility.allowedBatchYears
+        : [];
+
+      if (targetBatchIds.length) {
+        const enrolled = enrolledBatchId && targetBatchIds.some((id) => id.toString() === enrolledBatchId.toString());
+        if (!enrolled) return res.status(404).json({ message: 'Drive not found' });
+      } else if (allowedBatchYears.length) {
+        if (!batchYear || !allowedBatchYears.includes(batchYear)) {
+          return res.status(404).json({ message: 'Drive not found' });
+        }
       }
     }
 
